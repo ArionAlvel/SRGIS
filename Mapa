@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SRGIS Mapa de Alteraciones Hidrotermales</title>
+  <meta name="description" content="meta-description.">
+  <!--Estilo Mapa -->
+  <link rel="stylesheet" href="css/Mapa.css">
+  <!--Mapbox js -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+  <!--Tipografías -->
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Monda:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <!--Turf -->
+  <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
+ 
+</head>
+<body>
+     <!-- Mapas Base -->
+    <div id="map"></div>
+   
+    <div class="box">
+      <div class="hid-box">
+        <div id="icon_imp"><i class="material-icons" style="float:right;font-size:20px">file_upload</i>Cargar archivo</div>
+        <input type="file" id="file" name="file" accept="application/geo+json,application/vnd.geo+json,.geojson"/>
+        <p id="Intruc_load">Formato compatible: Geojson - Transforma Kml a Geojson <a  target="_blank" href="https://products.aspose.app/gis/en/conversion/kml-to-geojson">aquí</a> </p>
+      </div>
+    </div>
+ 
+<!-- togeojson -->
+<script src='jquery.js'></script>
+<script src='togeojson.js'></script>
+<script>
+//Llamado mapa base//
+mapboxgl.accessToken =
+'pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYVtfVOkahg';
+const map = new mapboxgl.Map({
+  container: 'map', // container ID
+  style: 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true', // style URL
+  center: [-70, -30], // starting position [lng, lat]
+  zoom: 10 // starting zoom
+});
+//importar poligono//
+        function handleFileSelect(evt) {
+          var file = evt.target.files[0]; // Read first selected file
+          var reader = new FileReader();
+          reader.onload = function (theFile) {
+            // Parse as (geo)JSON
+            var geoJSONcontent = JSON.parse(theFile.target.result);
+            // Add as source to the map
+      map.addSource('uploaded-source', {
+              'type': 'geojson',
+              'data': geoJSONcontent
+            });
+            map.addLayer({
+              'id': 'uploaded-polygons',
+              'type': 'fill',
+              'source': 'uploaded-source',
+              'paint': {
+                'fill-color': 'rgba(255, 255, 255, 0.05)',
+                'fill-outline-color': 'white',
+                'fill-opacity': 1
+              },
+            });
+          };
+          reader.readAsText(file, 'UTF-8');
+         document.getElementById('file')
+        .addEventListener('change', handleFileSelect, false);
+
+//Centrar
+       map.on('uploaded-polygons', function (e) {
+          if (e.sourceId !== 'uploaded-source' || !e.isSourceLoaded) return
+          var f = map.querySourceFeatures('uploaded-source')
+          if (f.length === 0) return
+          var bbox = turf.bbox({type: 'FeatureCollection',features: f});
+          map.fitBounds(bbox, {padding: 20});
+        });
+        //Quitar capas
+        document.getElementById("file").
+        addEventListener("input", removelayer);
+        function removelayer() {
+          map.removeLayer('uploaded-polygons'),
+          map.removeSource('uploaded-source')
+        }
+        </script>
+        </body>
+        </html>
