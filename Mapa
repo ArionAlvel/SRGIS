@@ -23,7 +23,9 @@
    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <!--Canva to html-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+
     <!--Scripts dibujador de polígonos -->
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
@@ -545,11 +547,12 @@ function createChart(data) {
   });
   return chartContainer;
 }
-        };//Fin función principal
+};//Fin función principal
 ////////Cambio mapa base////////
         map.on('style.load', function () {
             addSource();
             addLayer();
+          
         });
         function switchLayer(layer) {
             var layerId = layer.target.id;
@@ -576,23 +579,43 @@ function createChart(data) {
             collapsible[i].addEventListener("click", e => e.currentTarget.classList.toggle("active"));
         }
 ///////////////Imprimir mapa//////////////////
-$('#downloadLink').click(function() {
-    html2canvas(document.querySelector(".mapa"), {
-        allowTaint: true,
-        dpi: 190,
-        onrendered: function(canvas) {
-            var imgData = canvas.toDataURL('image/png', 1.0);
-            var link = document.createElement('a');
-            link.href = imgData;
-            link.download = "captura-pagina.png";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+$(document).ready(function(e) {
+    $('#downloadLink').click(function() {
+        var mapCanvas = map.getCanvas();
+        var body = $('body'); // Obtener instancia del body
+        html2canvas(body, { // Agregar al objeto html2canvas
+            allowTaint: true,
+            dpi: 190,
+            useCORS: true,
+            logging: true,
+            onrendered: function(interfaceCanvas) {
+                var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
+                var imgData = combinedCanvas.toDataURL('image/png', 1.0);
+                var link = document.createElement('a');
+                link.href = imgData;
+                link.download = "captura-pagina.png";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+        return false;
     });
-    return false;
+    function mergeCanvases(canvas1, canvas2) {
+    var combinedCanvas = document.createElement('canvas');
+    combinedCanvas.width = Math.max(canvas1.width, canvas2.width);
+    combinedCanvas.height = Math.max(canvas1.height, canvas2.height);
+    var ctx = combinedCanvas.getContext('2d');
+    ctx.drawImage(canvas1, 0, 0);
+    ctx.drawImage(canvas2, 0, 0);
+    return combinedCanvas;
+}
 });
+
 </script>
 </body>
 
 </html>
+
+
+
