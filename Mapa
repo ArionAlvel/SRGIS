@@ -1,194 +1,220 @@
 <!doctype html>
 <html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SRGIS Mapa de Alteraciones Hidrotermales</title>
-    <meta name="description" content="meta-description.">
-    <!--Estilo Mapa -->
-    <link rel="stylesheet" href="style.css">
-    <!--Mapbox js -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>SRGIS Mapa de Alteraciones Hidrotermales</title>
+        <meta name="description" content="meta-description.">
+        <!--Estilo Mapa -->
+        <link rel="stylesheet" href="style.css">
+        <!--Mapbox js -->
+        <link
+            href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css"
+            rel="stylesheet">
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
         <!--Tipografías -->
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Monda:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <!--Turf -->
-    <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
-      <!--JQuery-->
-   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> 
-    <!--Gráfico-->
-   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!--Canva to html-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
-    <!--Importador Kml-->
-    <script src="https://cdn.jsdelivr.net/npm/@mapbox/togeojson@0.16.0/togeojson.js"></script>
-     <!--Scripts dibujador de polígonos -->
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
-    <!-- Geocoder -->
-    <script
-    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
-</head>
-<body>
-    <main>
-    <!-- Mapas Base -->
-        <div id="map"></div>
-    <!-- Gráfico -->
-        <div id="popup" style="display: none">
-            <canvas id="chart"  willReadFrequently ></canvas>
-        </div>
-    <!-- Exportar mapa -->
-        <a id="downloadLink" href="" download="map.png">Download ↓</a>
-        <div id="image"></div>
-    <!-- Contenido -->
-        <div class="Grilla">
-            <div class="Instrucciones">
-                <a id="btn_Tuto" href="">!</a>
-                <div>
-                    <h2>Controles</h2>
-                    <p>Click izquierdo para desplazar el mapa, rueda para zoom y click derecho para vista 3D.</p>
-                </div>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap"
+            rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Monda:wght@700&display=swap"
+            rel="stylesheet">
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <!--Turf -->
+        <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
+        <!--JQuery-->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <!--Gráfico-->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <!--Canva to html-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+        <!--Importador Kml-->
+        <script
+            src="https://cdn.jsdelivr.net/npm/@mapbox/togeojson@0.16.0/togeojson.js"></script>
+        <!--Scripts dibujador de polígonos -->
+        <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+        <script
+            src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css"
+            type="text/css">
+        <!-- Geocoder -->
+        <script
+            src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"
+            type="text/css">
+    </head>
+    <body>
+        <main>
+            <!-- Mapas Base -->
+            <div id="map"></div>
+            <!-- Gráfico -->
+            <div id="popup" style="display: none">
+                <canvas id="chart" willreadfrequently="willReadFrequently"></canvas>
             </div>
-            <div class="MapaBase">
-                <div class="Calc_area">
-                    <div id="polygon_info">i</div>
-                    <div id="calculated-area">
-                        <p>Dibuja un polígono para calcular su área.<br><br>Borrar polígono</p>
+            <!-- Exportar mapa -->
+            <a id="downloadLink" href="" download="map.png">Download ↓</a>
+            <div id="image"></div>
+            <!-- Contenido -->
+            <div class="Grilla">
+                <div class="Instrucciones">
+                    <a id="btn_Tuto" href="">!</a>
+                    <div>
+                        <h2>Controles</h2>
+                        <p>Click izquierdo para desplazar el mapa, rueda para zoom y click derecho para
+                            vista 3D.</p>
                     </div>
                 </div>
-                <div class="C_MapaBase">
-                    <!-- Cambio Mapa Base -->
-                    <div id="menu">
-                        <input id="cl3ln6foa004b15l783jfr7cx" type="radio" name="rtoggle" value="SRGIS" checked="checked">
-                        <label for="cl3ln6foa004b15l783jfr7cx">SRGIS</label>
-                        <input id="cl3ln5mx0000f15s69t8vyrkh" type="radio" name="rtoggle" value="Satelite">
-                        <label for="cl3ln5mx0000f15s69t8vyrkh">Satélite</label>
-                        <input id="cl3oh9s8u000c14pgc3trxb6s" type="radio" name="rtoggle" value="Topo">
-                        <label for="cl3oh9s8u000c14pgc3trxb6s">Topo</label>
+                <div class="MapaBase">
+                    <div class="Calc_area">
+                        <div id="polygon_info">i</div>
+                        <div id="calculated-area">
+                            <p>Dibuja un polígono para calcular su área.<br><br>Borrar polígono</p>
+                        </div>
+                    </div>
+                    <div class="C_MapaBase">
+                        <!-- Cambio Mapa Base -->
+                        <div id="menu">
+                            <input
+                                id="cl3ln6foa004b15l783jfr7cx"
+                                type="radio"
+                                name="rtoggle"
+                                value="SRGIS"
+                                checked="checked">
+                            <label for="cl3ln6foa004b15l783jfr7cx">SRGIS</label>
+                            <input
+                                id="cl3ln5mx0000f15s69t8vyrkh"
+                                type="radio"
+                                name="rtoggle"
+                                value="Satelite">
+                            <label for="cl3ln5mx0000f15s69t8vyrkh">Satélite</label>
+                            <input id="cl3oh9s8u000c14pgc3trxb6s" type="radio" name="rtoggle" value="Topo">
+                            <label for="cl3oh9s8u000c14pgc3trxb6s">Topo</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="Leyenda">
+                    <div id="SideBar">
+                        <div id="SideBarMenu">
+                            <h2>ÍNDICES ESPECTRALES ASTER</h2>
+                            <ul>
+                                <li>
+                                    <div id="lineamientos"></div>
+                                    <p class="Line">Lineamientos</p>
+                                </li>
+                                <li>
+                                    <button type="button" class="collapsible active">
+                                        <h3>ASTER VNIR (<span id="slider-value3">100%</span>)</h3>
+                                    </button>
+                                    <ul class="content_C">
+                                        <li>
+                                            <input id="slider3" type="range" min="0" max="100" step="0" value="100">
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color: #FF0000"></div>
+                                            <p class="fila">Ferrico +</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#6F0000"></div>
+                                            <p class="fila">Ferrico -</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color: #00FF00"></div>
+                                            <p class="fila">Ferroso +</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#008400"></div>
+                                            <p class="fila">Ferroso -</p>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <button type="button" class="collapsible active">
+                                        <h3>ASTER SWIR(<span id="slider-value2">100%</span>)</h3>
+                                    </button>
+                                    <ul class="content_C">
+                                        <li>
+                                            <input id="slider2" type="range" min="0" max="100" step="0" value="100">
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color: #27AE60"></div>
+                                            <p class="fila">Propilítico</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#7B241C"></div>
+                                            <p class="fila">Jarosita</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#BF40BF"></div>
+                                            <p class="fila">Carbonatos</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#FF7F50"></div>
+                                            <p class="fila">Argílica/Fílica</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#FFC000"></div>
+                                            <p class="fila">Argílica Avanzada</p>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <button type="button" class="collapsible active">
+                                        <h3>ASTER TIR (<span id="slider-value">100%</span>)</h3>
+                                    </button>
+                                    <ul class="content_C">
+                                        <li>
+                                            <input id="slider" type="range" min="0" max="100" step="0" value="100">
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#FF00FF"></div>
+                                            <p class="fila">Carbonato +</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#800080"></div>
+                                            <p class="fila">Carbonato -</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#1F51FF"></div>
+                                            <p class="fila">Cuarzo +</p>
+                                        </li>
+                                        <li>
+                                            <div class="cuadrado" style="background-color:#00008B"></div>
+                                            <p class="fila">Cuarzo -</p>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="SideBarText" onclick="SideBar_ShowHide();">LEYENDA</div>
                     </div>
                 </div>
             </div>
-            <div class="Leyenda">
-                <div id="SideBar">
-                    <div id="SideBarMenu">
-                        <h2>ÍNDICES ESPECTRALES ASTER</h2>
-                        <ul>
-                            <li>
-                                <div id="lineamientos"></div>
-                                <p class="Line">Lineamientos</p>
-                            </li>
-                            <li>
-                                <button type="button" class="collapsible active">
-                                    <h3>ASTER VNIR (<span id="slider-value3">100%</span>)</h3>
-                                </button>
-                                <ul class="content_C">
-                                    <li>
-                                        <input id="slider3" type="range" min="0" max="100" step="0" value="100">
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color: #FF0000"></div>
-                                        <p class="fila">Ferrico +</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#6F0000"></div>
-                                        <p class="fila">Ferrico -</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color: #00FF00"></div>
-                                        <p class="fila">Ferroso +</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#008400"></div>
-                                        <p class="fila">Ferroso -</p>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button type="button" class="collapsible active">
-                                    <h3>ASTER SWIR(<span id="slider-value2">100%</span>)</h3>
-                                </button>
-                                <ul class="content_C">
-                                    <li>
-                                        <input id="slider2" type="range" min="0" max="100" step="0" value="100">
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color: #27AE60"></div>
-                                        <p class="fila">Propilítico</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#7B241C"></div>
-                                        <p class="fila">Jarosita</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#BF40BF"></div>
-                                        <p class="fila">Carbonatos</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#FF7F50"></div>
-                                        <p class="fila">Argílica/Fílica</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#FFC000"></div>
-                                        <p class="fila">Argílica Avanzada</p>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button type="button" class="collapsible active">
-                                    <h3>ASTER TIR (<span id="slider-value">100%</span>)</h3>
-                                </button>
-                                <ul class="content_C">
-                                    <li>
-                                        <input id="slider" type="range" min="0" max="100" step="0" value="100">
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#FF00FF"></div>
-                                        <p class="fila">Carbonato +</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#800080"></div>
-                                        <p class="fila">Carbonato -</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#1F51FF"></div>
-                                        <p class="fila">Cuarzo +</p>
-                                    </li>
-                                    <li>
-                                        <div class="cuadrado" style="background-color:#00008B"></div>
-                                        <p class="fila">Cuarzo -</p>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="SideBarText" onclick="SideBar_ShowHide();">LEYENDA</div>
+            <div class="Panel_Info">
+                <div id="features">
+                    <p id="pd">Índice espectral:</p>
                 </div>
             </div>
-        </div>
-        <div class="Panel_Info">
-            <div id="features">
-                <p id="pd">Índice espectral:</p>
+            <div class="Volar">
+                <div id="main"></div>
             </div>
-        </div>
-        <div class="Volar">
-            <div id="main">
-            </div>
-        </div>
         </div>
         <div class="Cargar_Arch">
             <div class="box">
                 <div class="hid-box">
-                    <div id="icon_imp"><i class="material-icons"
-                            style="float:right;font-size:20px">file_upload</i>Cargar archivo</div>
-                    <input type="file" id="file" accept=".kml" />
-                    <p id="Intruc_load">Formato compatible: kml</p> 
+                    <div id="icon_imp">
+                        <i class="material-icons" style="float:right;font-size:20px">file_upload</i>Cargar archivo</div>
+                    <input type="file" id="file" accept=".kml"/>
+                    <p id="Intruc_load">Formato compatible: kml</p>
                 </div>
             </div>
         </div>
@@ -197,50 +223,61 @@
         </div>
         <!-- Gráfico -->
         <div class="blank2">
-          
-        <div id="sidebar" class="absolute top-ml bottom right z1 w-full w300-ml px12 py12-ml events-none">
-          <div class="flex-parent flex-parent--column viewport-half h-auto-ml hmax-full bg-white round-ml shadow-darken10 events-all">
-            <div class="px12 py12">
-              <h3 class="txt-bold"><span id="sidebar-title"></span>
-                <button id="resetButton" class="btn btn--s fr">Reset</button>
-              </h3>
-              <p id="sidebar-description" class="none block-mm py6"></p>
-              <div id="chart"></div>
-            </div>
-          </div>
-        </div>
-        <div class="blank3"></div>
-        </div>
-      </main>
 
-   <!--Importar poligono-->
-   <script>
-        'use strict';    
-////////Llamado mapa base/////////
-        mapboxgl.accessToken ='pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYVtfVOkahg';
+            <div
+                id="sidebar"
+                class="absolute top-ml bottom right z1 w-full w300-ml px12 py12-ml events-none">
+                <div
+                    class="flex-parent flex-parent--column viewport-half h-auto-ml hmax-full bg-white round-ml shadow-darken10 events-all">
+                    <div class="px12 py12">
+                        <h3 class="txt-bold">
+                            <span id="sidebar-title"></span>
+                            <button id="resetButton" class="btn btn--s fr">Reset</button>
+                        </h3>
+                        <p id="sidebar-description" class="none block-mm py6"></p>
+                        <div id="chart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="blank3"></div>
+        </div>
+    </main>
+
+    <!--Importar poligono-->
+    <script>
+        'use strict';
+        ////////Llamado mapa base/////////
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYV' +
+                'tfVOkahg';
         const map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true', // style URL
-            center: [-70, -30], // starting position [lng, lat]
+            center: [
+                -70, -30
+            ], // starting position [lng, lat]
             zoom: 10, // starting zoom
             preserveDrawingBuffer: true,
             preventDefault: false
         });
-  ////////Barra busqueda////////
+        ////////Barra busqueda////////
         map.addControl(
-            new MapboxGeocoder({accessToken: mapboxgl.accessToken,mapboxgl: mapboxgl}));
-///////control de zoom///////
-        var nav = new mapboxgl.NavigationControl({ showCompass: true, showZoom: true });
+            new MapboxGeocoder({accessToken: mapboxgl.accessToken, mapboxgl: mapboxgl})
+        );
+        ///////control de zoom///////
+        var nav = new mapboxgl.NavigationControl({showCompass: true, showZoom: true});
         map.addControl(nav, "top-right");
-///////Cambio de mapa base///////
+        ///////Cambio de mapa base///////
         var layerList = document.getElementById('menu');
         var inputs = layerList.getElementsByTagName('input');
 
-/////////dibujar poligono////////
+        /////////dibujar poligono////////
         const draw = new MapboxDraw({
             displayControlsDefault: false, //determina si se muestran controles
-            controls: { polygon: true, trash: true },
-            defaultMode: 'simple_select'//draw_polygon para iniciar dibujado
+            controls: {
+                polygon: true,
+                trash: true
+            },
+            defaultMode: 'simple_select' //draw_polygon para iniciar dibujado
         });
         map.addControl(draw, 'top-left');
         map.on('draw.create', updateArea);
@@ -255,148 +292,186 @@
                 answer.innerHTML = `<p><strong>${rounded_area}</strong> Km<sup>2</sup><br><br>⇽Borrar polígono.</p>`;
             } else {
                 answer.innerHTML = 'Dibuja un polígono para calcular su área.<br>⇽Borrar polígono.</br>';
-                if (e.type !== 'draw.delete')
+                if (e.type !== 'draw.delete') 
                     alert('Has click para dibujar.');
-            }}
-/////////ESCALA/////////
-        map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }));
-/////////CAPAS////////
+                }
+            }
+        /////////ESCALA/////////
+        map.addControl(new mapboxgl.ScaleControl({position: 'bottom-right'}));
+        /////////CAPAS////////
 
-function addSource() { //Función principal
-    
-    //Puntos radar//
+        function addSource() { //Función principal
+
+            //Puntos radar//
             map.addSource('importRadar', {
-              'type': 'vector',
-              url: 'mapbox://srgis.0nsjmx9q'   
+                'type': 'vector',
+                url: 'mapbox://srgis.0nsjmx9q'
             });
             // Add a layer to use the image to represent the data.
             map.addLayer({
-              'id': 'puntosRadar',
-              'type': 'circle',
-              'source': 'importRadar', // reference the data source
-              'layout': {'visibility': 'visible'},
-              'paint': {
-                'circle-radius': 3,
-                'circle-color': 'rgba(204,102,0,1)'
-              },
-              'source-layer': 'ps-8eowqd'
-                });
-    // Aster TIR//
-            map.addSource('AsterTIR', {//id para la funcion
+                'id': 'puntosRadar', 'type': 'circle', 'source': 'importRadar', // reference the data source
+                'layout': {
+                    'visibility': 'visible'
+                },
+                'paint': {
+                    'circle-radius': 3,
+                    'circle-color': 'rgba(204,102,0,1)'
+                },
+                'source-layer': 'ps-8eowqd'
+            });
+            // Aster TIR//
+            map.addSource('AsterTIR', { //id para la funcion
                 type: 'vector',
                 url: 'mapbox://srgis.cf6bosyu/'
             });
             map.addLayer({
-                'id': 'ASTER TIR',//id funcion add layer
+                'id': 'ASTER TIR', //id funcion add layer
                 'type': 'fill',
                 'source': 'AsterTIR', //id funcion addsource
-                'source-layer': 'TIR-2es0qf',//nombre vector layer
+                'source-layer': 'TIR-2es0qf', //nombre vector layer
                 'minzoom': 3,
                 'maxzoom': 0,
-                'layout': { 'visibility': 'visible' },
+                'layout': {
+                    'visibility': 'visible'
+                },
                 'paint': {
                     "fill-color": {
                         property: 'CLASS_NAME',
                         type: 'categorical',
                         stops: [
-                            ['Carbonato +', '#FF00FF'],
-                            ['Carbonato -', '#800080'],
-                            ['Cuarzo +', '#1F51FF'],
-                            ['Cuarzo -', '#00008B'],
+                            [
+                                'Carbonato +', '#FF00FF'
+                            ],
+                            [
+                                'Carbonato -', '#800080'
+                            ],
+                            [
+                                'Cuarzo +', '#1F51FF'
+                            ],
+                            [
+                                'Cuarzo -', '#00008B'
+                            ]
                         ]
                     },
                     'fill-opacity': 0.6
                 }
             });
-    //Aster VNIR//
-            map.addSource('AsterVNIR', {//id para la funcion
+            //Aster VNIR//
+            map.addSource('AsterVNIR', { //id para la funcion
                 type: 'vector',
                 url: 'mapbox://srgis.92rokv2i/'
             });
             map.addLayer({
-                'id': 'ASTER VNIR',//id funcion add layer
+                'id': 'ASTER VNIR', //id funcion add layer
                 'type': 'fill',
                 'source': 'AsterVNIR', //id funcion addsource
-                'source-layer': 'VNIR-abfvcs',//nombre vector layer
+                'source-layer': 'VNIR-abfvcs', //nombre vector layer
                 'minzoom': 8,
                 'maxzoom': 0,
-                'layout': { 'visibility': 'visible' },
+                'layout': {
+                    'visibility': 'visible'
+                },
                 'paint': {
                     "fill-color": {
                         property: 'CLASS_NAME',
                         type: 'categorical',
                         stops: [
-                            ['Férrico +', '#FF0000'],
-                            ['Férrico -', '#6F0000'],
-                            ['Ferroso +', '#00FF00'],
-                            ['Ferroso -', '#008400'],
+                            [
+                                'Férrico +', '#FF0000'
+                            ],
+                            [
+                                'Férrico -', '#6F0000'
+                            ],
+                            [
+                                'Ferroso +', '#00FF00'
+                            ],
+                            [
+                                'Ferroso -', '#008400'
+                            ]
                         ]
                     },
                     'fill-opacity': 0.6
                 }
             });
-    //Aster SWIR//
-            map.addSource('AsterSWIR', {//id para la funcion
+            //Aster SWIR//
+            map.addSource('AsterSWIR', { //id para la funcion
                 type: 'vector',
                 url: 'mapbox://srgis.bjmziz7k/'
             });
             map.addLayer({
-                'id': 'ASTER SWIR',//id funcion add layer
+                'id': 'ASTER SWIR', //id funcion add layer
                 'type': 'fill',
                 'source': 'AsterSWIR', //id funcion addsource
-                'source-layer': 'SWIR-7slhva',//nombre vector layer
+                'source-layer': 'SWIR-7slhva', //nombre vector layer
                 'minzoom': 8,
                 'maxzoom': 0,
-                'layout': { 'visibility': 'visible' },
+                'layout': {
+                    'visibility': 'visible'
+                },
                 'paint': {
                     "fill-color": {
                         property: 'CLASS_NAME',
                         type: 'categorical',
                         stops: [
-                            ['Propilítico', '#27AE60'],
-                            ['Jarosita', '#7B241C'],
-                            ['Carbonatos', '#BF40BF'],
-                            ['Argílica/Fílica', '#FF7F50'],
-                            ['Argílica Avanzada', '#FFC000'],
+                            [
+                                'Propilítico', '#27AE60'
+                            ],
+                            [
+                                'Jarosita', '#7B241C'
+                            ],
+                            [
+                                'Carbonatos', '#BF40BF'
+                            ],
+                            [
+                                'Argílica/Fílica', '#FF7F50'
+                            ],
+                            [
+                                'Argílica Avanzada', '#FFC000'
+                            ]
                         ]
                     },
                     'fill-opacity': 0.6
                 }
             });
-//lineamientos//
-            map.addSource('Estructuras', {//id para la funcion
+            //lineamientos//
+            map.addSource('Estructuras', { //id para la funcion
                 type: 'vector',
                 url: 'mapbox://srgis.36126udf'
             });
             map.addLayer({
-                'id': 'Lineamientos',//id funcion add layer
+                'id': 'Lineamientos', //id funcion add layer
                 'type': 'line',
                 'source': 'Estructuras', //id funcion addsource
-                'source-layer': 'FM-bt3zr2',//nombre vector layer
-                'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                'paint': {
-                    'line-color': '#000019', 'line-width': 1.8, 'line-dasharray': [2, 3]
+                'source-layer': 'FM-bt3zr2', //nombre vector layer
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
                 },
-            });
-///////CONTROL DE TRANSPARENCIA///////
-    const slider = document.getElementById('slider');
-    const sliderValue = document.getElementById('slider-value');
-    const slider2 = document.getElementById('slider2');
-    const sliderValue2 = document.getElementById('slider-value2');
-    const slider3 = document.getElementById('slider3');
-    const sliderValue3 = document.getElementById('slider-value3');
-    slider.addEventListener('input', (e) => {
-        map.setPaintProperty(
-            'ASTER TIR',
-            'fill-opacity',
-                parseInt(e.target.value, 10) / 100,);
-        //Value indicator
-            sliderValue.textContent = e.target.value + '%';
-        //Ocultar en 0
-            if (sliderValue.innerHTML == '0%') {
-                    map.setLayoutProperty('ASTER TIR', 'visibility', 'none');
+                'paint': {
+                    'line-color': '#000019',
+                    'line-width': 1.8,
+                    'line-dasharray': [2, 3]
                 }
-                else {
+            });
+            ///////CONTROL DE TRANSPARENCIA///////
+            const slider = document.getElementById('slider');
+            const sliderValue = document.getElementById('slider-value');
+            const slider2 = document.getElementById('slider2');
+            const sliderValue2 = document.getElementById('slider-value2');
+            const slider3 = document.getElementById('slider3');
+            const sliderValue3 = document.getElementById('slider-value3');
+            slider.addEventListener('input', (e) => {
+                map.setPaintProperty(
+                    'ASTER TIR',
+                    'fill-opacity',
+                    parseInt(e.target.value, 10) / 100,
+                );
+                //Value indicator
+                sliderValue.textContent = e.target.value + '%';
+                //Ocultar en 0
+                if (sliderValue.innerHTML == '0%') {
+                    map.setLayoutProperty('ASTER TIR', 'visibility', 'none');
+                } else {
                     map.setLayoutProperty('ASTER TIR', 'visibility', 'visible');
                 }
             });
@@ -411,8 +486,7 @@ function addSource() { //Función principal
                 //Ocultar en 0
                 if (sliderValue2.innerHTML === '0%') {
                     map.setLayoutProperty('ASTER SWIR', 'visibility', 'none');
-                }
-                else {
+                } else {
                     map.setLayoutProperty('ASTER SWIR', 'visibility', 'visible');
                 }
             });
@@ -427,8 +501,7 @@ function addSource() { //Función principal
                 //Ocultar en 0
                 if (sliderValue3.innerHTML === '0%') {
                     map.setLayoutProperty('ASTER VNIR', 'visibility', 'none');
-                }
-                else {
+                } else {
                     map.setLayoutProperty('ASTER VNIR', 'visibility', 'visible');
                 }
             });
@@ -437,199 +510,337 @@ function addSource() { //Función principal
                 const states2 = map.queryRenderedFeatures(event.point, {
                     layers: ['ASTER VNIR', 'ASTER SWIR', 'ASTER TIR']
                 });
-                document.getElementById('pd').innerHTML = states2.length
-                    ? `<h3 class='infoI'>Índice espectral: ${states2[0].properties.CLASS_NAME}</h3>
-            <p class='subinfoI'>${states2[0].properties.MXS}</p>`
-                    : `<p>Índice espectral:</p>`;
+                document
+                    .getElementById('pd')
+                    .innerHTML = states2.length
+                        ? `<h3 class='infoI'>Índice espectral: ${states2[0]
+                            .properties
+                            .CLASS_NAME}</h3>
+            <p class='subinfoI'>${states2[0]
+                            .properties
+                            .MXS}</p>`
+                        : `<p>Índice espectral:</p>`;
             });
 
             //Gráfico
             var popup;
             var screenResolutionCheckInterval = null;
-map.on('mousemove', function(e) {
-  var features = map.queryRenderedFeatures(e.point, { layers: ['puntosRadar'] });
-  if (features.length) {
-    var coordinates = features[0].geometry.coordinates.slice();
-    var data = features[0].properties;
-    if (!popup) {
-      popup = new mapboxgl.Popup({
-        closeOnClick: false,
-        anchor: 'bottom',
-        interactive: false,
-        maxWidth: '10000px',
-        maxHeight: '8000px'
-      });
-    }
-    var chart = createChart(data);
-    if (chart) {
-      popup
-        .setLngLat(coordinates)
-        .setDOMContent(chart)
-        .addTo(map);
-    }
-    
-    canvas.getContext('2d').willReadFrequently = true;
-    map.getCanvas().style.cursor = 'pointer';
-  } else {
-    map.getCanvas().style.cursor = '';
-    if (popup) {
-      popup.remove();
-      popup = null;
-    }
-  }
-});
+            map.on('mousemove', function (e) {
+                var features = map.queryRenderedFeatures(e.point, {layers: ['puntosRadar']});
+                if (features.length) {
+                    var coordinates = features[0]
+                        .geometry
+                        .coordinates
+                        .slice();
+                    var data = features[0].properties;
+                    if (!popup) {
+                        popup = new mapboxgl.Popup(
+                            {closeOnClick: false, anchor: 'bottom', interactive: false, maxWidth: '10000px', maxHeight: '8000px'}
+                        );
+                    }
+                    var chart = createChart(data);
+                    if (chart) {
+                        popup
+                            .setLngLat(coordinates)
+                            .setDOMContent(chart)
+                            .addTo(map);
+                    }
 
-function createChart(data) {
-    var labels = ['08-01-2020', '20-01-2020', '01-02-2020', '13-02-2020', '08-03-2020', '20-03-2020', '01-04-2020', '13-04-2020', '25-04-2020', '07-05-2020', '19-05-2020', '31-05-2020', '12-06-2020', '24-06-2020', '06-07-2020', '18-07-2020', '30-07-2020', '05-08-2020', '05-08-2020', '11-08-2020', '17-08-2020', '23-08-2020', '29-08-2020', '04-09-2020', '10-09-2020', '16-09-2020', '28-09-2020', '04-10-2020', '10-10-2020', '16-10-2020', '22-10-2020', '03-11-2020', '15-11-2020', '27-11-2020', '09-12-2020', '15-12-2020', '21-12-2020', '27-12-2020', '02-01-2021', '14-01-2021', '26-01-2021', '01-02-2021', '07-02-2021', '13-02-2021', '19-02-2021', '25-02-2021', '03-03-2021', '09-03-2021', '15-03-2021', '21-03-2021', '27-03-2021', '02-04-2021', '08-04-2021', '14-04-2021', '20-04-2021', '26-04-2021', '02-05-2021', '14-05-2021', '26-05-2021'];
-  
-var values = [data. D_20200108, data. D_20200120, data. D_20200201, data. D_20200213, data. D_20200308, data. D_20200320, data. D_20200401, data. D_20200413, data. D_20200425, data. D_20200507, data. D_20200519, data. D_20200531, data. D_20200612, data. D_20200624, data. D_20200706, data. D_20200718, data. D_20200730, data. D_20200805, data. D_20200805, data. D_20200811, data. D_20200817, data. D_20200823, data. D_20200829, data. D_20200904, data. D_20200910, data. D_20200916, data. D_20200928, data. D_20201004, data. D_20201010, data. D_20201016, data.D_20201022, data. D_20201103, data. D_20201115, data. D_20201127, data. D_20201209, data. D_20201215, data. D_20201221, data. D_20201227, data. D_20210102, data. D_20210114, data. D_20210126, data. D_20210201, data. D_20210207, data. D_20210213, data. D_20210219, data. D_20210225, data. D_20210303, data. D_20210309, data. D_20210315, data. D_20210321, data. D_20210327, data. D_20210402, data. D_20210408, data. D_20210414, data. D_20210420, data. D_20210426, data. D_20210502, data. D_20210514, data. D_20210526];
+                    canvas
+                        .getContext('2d')
+                        .willReadFrequently = true;
+                    map
+                        .getCanvas()
+                        .style
+                        .cursor = 'pointer';
+                } else {
+                    map
+                        .getCanvas()
+                        .style
+                        .cursor = '';
+                    if (popup) {
+                        popup.remove();
+                        popup = null;
+                    }
+                }
+            });
 
-  
-  var chartContainer = document.createElement('div');
-  var chartCanvas = document.createElement('canvas');
-  chartContainer.appendChild(chartCanvas);
-  
-  var chart = new Chart(chartCanvas, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Desplazamiento',
-        data: values,
-        backgroundColor: 'rgba(204,102,0,0.2)',
-        borderColor: 'rgba(204,102,0,1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-     
-        scales: {
-yAxes: [{
-    height: 3000, // valor en pixels
+            function createChart(data) {
+                var labels = [
+                    '08-01-2020',
+                    '20-01-2020',
+                    '01-02-2020',
+                    '13-02-2020',
+                    '08-03-2020',
+                    '20-03-2020',
+                    '01-04-2020',
+                    '13-04-2020',
+                    '25-04-2020',
+                    '07-05-2020',
+                    '19-05-2020',
+                    '31-05-2020',
+                    '12-06-2020',
+                    '24-06-2020',
+                    '06-07-2020',
+                    '18-07-2020',
+                    '30-07-2020',
+                    '05-08-2020',
+                    '05-08-2020',
+                    '11-08-2020',
+                    '17-08-2020',
+                    '23-08-2020',
+                    '29-08-2020',
+                    '04-09-2020',
+                    '10-09-2020',
+                    '16-09-2020',
+                    '28-09-2020',
+                    '04-10-2020',
+                    '10-10-2020',
+                    '16-10-2020',
+                    '22-10-2020',
+                    '03-11-2020',
+                    '15-11-2020',
+                    '27-11-2020',
+                    '09-12-2020',
+                    '15-12-2020',
+                    '21-12-2020',
+                    '27-12-2020',
+                    '02-01-2021',
+                    '14-01-2021',
+                    '26-01-2021',
+                    '01-02-2021',
+                    '07-02-2021',
+                    '13-02-2021',
+                    '19-02-2021',
+                    '25-02-2021',
+                    '03-03-2021',
+                    '09-03-2021',
+                    '15-03-2021',
+                    '21-03-2021',
+                    '27-03-2021',
+                    '02-04-2021',
+                    '08-04-2021',
+                    '14-04-2021',
+                    '20-04-2021',
+                    '26-04-2021',
+                    '02-05-2021',
+                    '14-05-2021',
+                    '26-05-2021'
+                ];
 
-scaleLabel: {
-display: true,
-labelString: 'Desplazamiento (m)',
-},
-ticks: {
-    beginAtZero: true,
-suggestedMin: 4,
-stepSize: 5,
-callback: function(value, index, values) {
-return value/* + 'm'*/;
-}
-},
-gridLines: {
-        drawBorder: false
-      },
-      height: 1000 // valor en pixels
-}],
-xAxes: [{
-    width: 5000,
-scaleLabel: {
-display: false,
-labelString: 'Fecha'
-},
-ticks: {
-    autoSkip: true,
-stepSize: 10
-},
-gridLines: {
-        drawBorder: false
-      },
-      width: 1 // valor en pixels
+                var values = [
+                    data.D_20200108,
+                    data.D_20200120,
+                    data.D_20200201,
+                    data.D_20200213,
+                    data.D_20200308,
+                    data.D_20200320,
+                    data.D_20200401,
+                    data.D_20200413,
+                    data.D_20200425,
+                    data.D_20200507,
+                    data.D_20200519,
+                    data.D_20200531,
+                    data.D_20200612,
+                    data.D_20200624,
+                    data.D_20200706,
+                    data.D_20200718,
+                    data.D_20200730,
+                    data.D_20200805,
+                    data.D_20200805,
+                    data.D_20200811,
+                    data.D_20200817,
+                    data.D_20200823,
+                    data.D_20200829,
+                    data.D_20200904,
+                    data.D_20200910,
+                    data.D_20200916,
+                    data.D_20200928,
+                    data.D_20201004,
+                    data.D_20201010,
+                    data.D_20201016,
+                    data.D_20201022,
+                    data.D_20201103,
+                    data.D_20201115,
+                    data.D_20201127,
+                    data.D_20201209,
+                    data.D_20201215,
+                    data.D_20201221,
+                    data.D_20201227,
+                    data.D_20210102,
+                    data.D_20210114,
+                    data.D_20210126,
+                    data.D_20210201,
+                    data.D_20210207,
+                    data.D_20210213,
+                    data.D_20210219,
+                    data.D_20210225,
+                    data.D_20210303,
+                    data.D_20210309,
+                    data.D_20210315,
+                    data.D_20210321,
+                    data.D_20210327,
+                    data.D_20210402,
+                    data.D_20210408,
+                    data.D_20210414,
+                    data.D_20210420,
+                    data.D_20210426,
+                    data.D_20210502,
+                    data.D_20210514,
+                    data.D_20210526
+                ];
 
-}]
-}
-    }
-  });
-  window.addEventListener("resize", function() {
-    chart.canvas.width = 10000;
-    chart.canvas.height = 9800;
-    chart.update();
-  });
-  return chartContainer;
-}
+                var chartContainer = document.createElement('div');
+                var chartCanvas = document.createElement('canvas');
+                chartContainer.appendChild(chartCanvas);
 
-// Función para ajustar el tamaño del canvas al tamaño del contenedor
-function adjustCanvasSize() {
-chartCanvas.width = chartContainer.offsetWidth;
-chartCanvas.height = chartContainer.offsetHeight;
-}
-// Llamar a la función adjustCanvasSize cuando se detecte un cambio en la resolución de la pantalla
-window.addEventListener("resize", adjustCanvasSize);
-// Llamar a la función adjustCanvasSize al inicializar la página
-adjustCanvasSize();
+                var chart = new Chart(chartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Desplazamiento',
+                                data: values,
+                                backgroundColor: 'rgba(204,102,0,0.2)',
+                                borderColor: 'rgba(204,102,0,1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
 
+                        scales: {
+                            yAxes: [
+                                {
+                                    height: 3000, // valor en pixels
 
-//KML IMPORTADO//   
-    // Añadir un input para seleccionar el archivo KML
-    var kmlData;
-    var input = document.getElementById('file');
-input.addEventListener('change', handleFileSelect);
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Desplazamiento (m)'
+                                    },
+                                    ticks: {
+                                        beginAtZero: true,
+                                        suggestedMin: 4,
+                                        stepSize: 5,
+                                        callback: function (value, index, values) {
+                                            return value/* + 'm'*/;
+                                        }
+                                    },
+                                    gridLines: {
+                                        drawBorder: false
+                                    },
+                                    height: 1000 // valor en pixels
+                                }
+                            ],
+                            xAxes: [
+                                {
+                                    width: 5000,
+                                    scaleLabel: {
+                                        display: false,
+                                        labelString: 'Fecha'
+                                    },
+                                    ticks: {
+                                        autoSkip: true,
+                                        stepSize: 10
+                                    },
+                                    gridLines: {
+                                        drawBorder: false
+                                    },
+                                    width: 1 // valor en pixels
 
-// Función que maneja la selección del archivo KML
-function handleFileSelect(event) {
-  var file = event.target.files[0];
-  var reader = new FileReader();
-  reader.addEventListener('load', function (e) {
-    // Eliminar la capa anterior si existe
-    if (map.getLayer('polygon')) {
-      map.removeLayer('polygon');
-      map.removeSource('polygon');
-    }
-    var kml = e.target.result;
-    var features = toGeoJSON.kml(
-      (new DOMParser()).parseFromString(kml, 'text/xml')
-    ).features;
-    var polygon = features.find(function (feature) {
-      return feature.geometry.type === 'Polygon';
-    });
-    if (!polygon) {
-      return alert('El archivo KML no contiene un polígono válido.');
-    }
-    map.addSource('polygon', {
-      type: 'geojson',
-      data: polygon
-    });
-    map.addLayer({
-      id: 'polygon',
-      type: 'fill',
-      source: 'polygon',
-      paint: {
-        'fill-color': '#088',
-        'fill-opacity': 0.8
-      }
-    });
-    map.fitBounds(turf.bbox(polygon), {
-      padding: 20
-    });
-  });
-  reader.readAsText(file);
-}
+                                }
+                            ]
+                        }
+                    }
+                });
+                window.addEventListener("resize", function () {
+                    chart.canvas.width = 10000;
+                    chart.canvas.height = 9800;
+                    chart.update();
+                });
+                return chartContainer;
+            }
 
-// Función que maneja el cambio de mapa base
-function handleMapStyleChange() {
-  // Eliminar la capa anterior si existe
-  if (map.getLayer('polygon')) {
-    map.removeLayer('polygon');
-    map.removeSource('polygon');
-  }
- 
+            // Función para ajustar el tamaño del canvas al tamaño del contenedor
+            function adjustCanvasSize() {
+                chartCanvas.width = chartContainer.offsetWidth;
+                chartCanvas.height = chartContainer.offsetHeight;
+            }
+            // Llamar a la función adjustCanvasSize cuando se detecte un cambio en la
+            // resolución de la pantalla
+            window.addEventListener("resize", adjustCanvasSize);
+            // Llamar a la función adjustCanvasSize al inicializar la página
+            adjustCanvasSize();
 
-}
-};//Fin función principal
+            //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
+            var kmlData;
+            var input = document.getElementById('file');
+            input.addEventListener('change', handleFileSelect);
 
-////////Cambio mapa base////////
+            // Función que maneja la selección del archivo KML
+            function handleFileSelect(event) {
+                var file = event
+                    .target
+                    .files[0];
+                var reader = new FileReader();
+                reader.addEventListener('load', function (e) {
+                    // Eliminar la capa anterior si existe
+                    if (map.getLayer('polygon')) {
+                        map.removeLayer('polygon');
+                        map.removeSource('polygon');
+                    }
+                    var kml = e.target.result;
+                    var features = toGeoJSON
+                        .kml(
+                            (new DOMParser()).parseFromString(kml, 'text/xml')
+                        )
+                        .features;
+                    var polygon = features.find(function (feature) {
+                        return feature.geometry.type === 'Polygon';
+                    });
+                    if (!polygon) {
+                        return alert('El archivo KML no contiene un polígono válido.');
+                    }
+                    map.addSource('polygon', {
+                        type: 'geojson',
+                        data: polygon
+                    });
+                    map.addLayer({
+                        id: 'polygon',
+                        type: 'fill',
+                        source: 'polygon',
+                        paint: {
+                            'fill-color': '#088',
+                            'fill-opacity': 0.8
+                        }
+                    });
+                    map.fitBounds(turf.bbox(polygon), {padding: 20});
+                });
+                reader.readAsText(file);
+            }
+
+            // Función que maneja el cambio de mapa base
+            function handleMapStyleChange() {
+                // Eliminar la capa anterior si existe
+                if (map.getLayer('polygon')) {
+                    map.removeLayer('polygon');
+                    map.removeSource('polygon');
+                }
+
+            }
+        }; //Fin función principal
+
+        ////////Cambio mapa base////////
         map.on('style.load', function () {
             addSource();
             addLayer();
             handleFileSelect();
         });
         map.on('style.change', function () {
-            
-  handleFileSelect();
-});
+
+            handleFileSelect();
+        });
         function switchLayer(layer) {
             var layerId = layer.target.id;
             map.setStyle('mapbox://styles/srgis/' + layerId);
@@ -637,67 +848,66 @@ function handleMapStyleChange() {
         for (var i = 0; i < inputs.length; i++) {
             inputs[i].onclick = switchLayer;
         }
-///////SideBar////////
+        ///////SideBar////////
         /* Show-hide the SideBar */
         function SideBar_ShowHide() {
-            var _sb = document.getElementById("SideBar"); /* Get SideBar object */
-            var _width = '200px'; /* SideBar width */
+            var _sb = document.getElementById("SideBar");/* Get SideBar object */
+            var _width = '200px';/* SideBar width */
 
             if (_sb.style.width == _width) {
-                _sb.style.width = '0px'; /* Hide SideBar */
+                _sb.style.width = '0px';/* Hide SideBar */
                 return;
             }
-            _sb.style.width = _width; /* Show SideBar */
+            _sb.style.width = _width;/* Show SideBar */
         };
         //collapsible
         const collapsible = document.getElementsByClassName("collapsible");
         for (let i = 0; i < collapsible.length; i++) {
-            collapsible[i].addEventListener("click", e => e.currentTarget.classList.toggle("active"));
+            collapsible[i].addEventListener(
+                "click",
+                e => e.currentTarget.classList.toggle("active")
+            );
         }
-///////////////Imprimir mapa//////////////////
-$(document).ready(function(e) {
-    $('#downloadLink').click(function() {
-        var mapCanvas = map.getCanvas();
-        var body = $('body'); // Obtener instancia del body
-        html2canvas(body, { // Agregar al objeto html2canvas
-            allowTaint: true,
-            dpi: 190,
-            useCORS: true,
-            logging: true,
-            onrendered: function(interfaceCanvas) {
-                var mapCanvas = map.getCanvas(); // Obtener instancia del canvas del mapa
-                canvas.width = mapCanvas.width; // Ajustar ancho de la interfaz al ancho del mapa
-                canvas.height = mapCanvas.height; // Ajustar alto de la interfaz al alto del mapa
-                var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
-                var imgData = combinedCanvas.toDataURL('image/png', 1.0);
-                var link = document.createElement('a');
-                link.href = imgData;
-                link.download = "captura-pagina.png";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+        ///////////////Imprimir mapa//////////////////
+        $(document).ready(function (e) {
+            $('#downloadLink').click(function () {
+                var mapCanvas = map.getCanvas();
+                var body = $('body'); // Obtener instancia del body
+                html2canvas(body, { // Agregar al objeto html2canvas
+                    allowTaint: true,
+                    dpi: 190,
+                    useCORS: true,
+                    logging: true,
+                    onrendered: function (interfaceCanvas) {
+                        var mapCanvas = map.getCanvas(); // Obtener instancia del canvas del mapa
+                        canvas.width = mapCanvas.width; // Ajustar ancho de la interfaz al ancho del mapa
+                        canvas.height = mapCanvas.height; // Ajustar alto de la interfaz al alto del mapa
+                        var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
+                        var imgData = combinedCanvas.toDataURL('image/png', 1.0);
+                        var link = document.createElement('a');
+                        link.href = imgData;
+                        link.download = "captura-pagina.png";
+                        document
+                            .body
+                            .appendChild(link);
+                        link.click();
+                        document
+                            .body
+                            .removeChild(link);
+                    }
+                });
+                return false;
+            });
+            function mergeCanvases(canvas1, canvas2) {
+                var combinedCanvas = document.createElement('canvas');
+                combinedCanvas.width = Math.max(canvas1.width, canvas2.width);
+                combinedCanvas.height = Math.max(canvas1.height, canvas2.height);
+                var ctx = combinedCanvas.getContext('2d');
+                ctx.drawImage(canvas1, 0, 0);
+                ctx.drawImage(canvas2, 0, 0);
+                return combinedCanvas;
             }
         });
-        return false;
-    });
-    function mergeCanvases(canvas1, canvas2) {
-    var combinedCanvas = document.createElement('canvas');
-    combinedCanvas.width = Math.max(canvas1.width, canvas2.width);
-    combinedCanvas.height = Math.max(canvas1.height, canvas2.height);
-    var ctx = combinedCanvas.getContext('2d');
-    ctx.drawImage(canvas1, 0, 0);
-    ctx.drawImage(canvas2, 0, 0);
-    return combinedCanvas;
-}
-});
-
-</script>
+    </script>
 </body>
-
 </html>
-
-
-
-
-
-
