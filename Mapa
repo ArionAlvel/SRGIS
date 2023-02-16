@@ -24,9 +24,10 @@
    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <!--Canva to html-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
-
-    <!--Scripts dibujador de polígonos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+    <!--Importador Kml-->
+    <script src="https://cdn.jsdelivr.net/npm/@mapbox/togeojson@0.16.0/togeojson.js"></script>
+     <!--Scripts dibujador de polígonos -->
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
@@ -41,7 +42,7 @@
         <div id="map"></div>
     <!-- Gráfico -->
         <div id="popup" style="display: none">
-            <canvas id="chart"></canvas>
+            <canvas id="chart"  willReadFrequently ></canvas>
         </div>
     <!-- Exportar mapa -->
         <a id="downloadLink" href="" download="map.png">Download ↓</a>
@@ -213,7 +214,7 @@
       </main>
 
    <!--Importar poligono-->
-   <script type="module">
+   <script>
         'use strict';    
 ////////Llamado mapa base/////////
         mapboxgl.accessToken ='pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYVtfVOkahg';
@@ -225,8 +226,7 @@
             preserveDrawingBuffer: true,
             preventDefault: false
         });
-        import { kml } from "https://unpkg.com/@tmcw/togeojson?module";//Llamado módulo togeojson
-////////Barra busqueda////////
+  ////////Barra busqueda////////
         map.addControl(
             new MapboxGeocoder({accessToken: mapboxgl.accessToken,mapboxgl: mapboxgl}));
 ///////control de zoom///////
@@ -235,6 +235,7 @@
 ///////Cambio de mapa base///////
         var layerList = document.getElementById('menu');
         var inputs = layerList.getElementsByTagName('input');
+
 /////////dibujar poligono////////
         const draw = new MapboxDraw({
             displayControlsDefault: false, //determina si se muestran controles
@@ -260,44 +261,9 @@
 /////////ESCALA/////////
         map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }));
 /////////CAPAS////////
+
 function addSource() { //Función principal
-    //KML IMPORTADO//   
-        var geoJSONcontent;
-        var uploadedSource;
-        var uploadedLayer;
-        // Add file input listener
-        document.getElementById('file').addEventListener('change', handleFileSelect, false);
-        // Handle file input
-        function handleFileSelect(evt) {
-            var file = evt.target.files[0]; // Read first selected file
-            var reader = new FileReader();
-            reader.onload = function (theFile) {
-        // Parse as (geo)JSON
-            geoJSONcontent = kml(new DOMParser().parseFromString(theFile.target.result, "text/xml"));
-        // Add as source to the map
-            map.addSource('uploaded-source', {
-                'type': 'geojson',
-                'data': geoJSONcontent
-            });
-             map.addLayer({
-                'id': 'uploaded-polygons',
-                'type': 'fill',
-                'source': 'uploaded-source',
-                'paint': {
-                    'fill-color': 'rgba(255, 255, 255, 0.05)',
-                    'fill-outline-color': 'white',
-                    'fill-opacity': 1
-                },
-            });
-        // center map on polygon
-                const polygonCoords = geoJSONcontent.features[0].geometry.coordinates[0];
-                const polygonBounds = polygonCoords.reduce((bounds, coord) => {
-                    return bounds.extend(coord);
-                }, new mapboxgl.LngLatBounds(polygonCoords[0], polygonCoords[0]));
-                map.fitBounds(polygonBounds);
-            };
-            reader.readAsText(file, 'UTF-8');
-        }
+    
     //Puntos radar//
             map.addSource('importRadar', {
               'type': 'vector',
@@ -479,17 +445,19 @@ function addSource() { //Función principal
 
             //Gráfico
             var popup;
+            var screenResolutionCheckInterval = null;
 map.on('mousemove', function(e) {
   var features = map.queryRenderedFeatures(e.point, { layers: ['puntosRadar'] });
   if (features.length) {
-    // Obtener coordenadas del punto y mostrar popup
     var coordinates = features[0].geometry.coordinates.slice();
     var data = features[0].properties;
-    if(!popup){
+    if (!popup) {
       popup = new mapboxgl.Popup({
         closeOnClick: false,
         anchor: 'bottom',
-        interactive: false
+        interactive: false,
+        maxWidth: '10000px',
+        maxHeight: '8000px'
       });
     }
     var chart = createChart(data);
@@ -500,28 +468,27 @@ map.on('mousemove', function(e) {
         .addTo(map);
     }
     
+    canvas.getContext('2d').willReadFrequently = true;
     map.getCanvas().style.cursor = 'pointer';
   } else {
     map.getCanvas().style.cursor = '';
-    if(popup){
+    if (popup) {
       popup.remove();
-      popup=null;
+      popup = null;
     }
   }
 });
 
-// Función para crear el gráfico en el popup
 function createChart(data) {
-  // Crear etiquetas y datos para el gráfico
-  var labels = ['01-08-2020', '12-06-2020', '04-10-2020'];
-  var values = [data.D_20200108, data.D_20200612, data.D_20201004];
+    var labels = ['08-01-2020', '20-01-2020', '01-02-2020', '13-02-2020', '08-03-2020', '20-03-2020', '01-04-2020', '13-04-2020', '25-04-2020', '07-05-2020', '19-05-2020', '31-05-2020', '12-06-2020', '24-06-2020', '06-07-2020', '18-07-2020', '30-07-2020', '05-08-2020', '05-08-2020', '11-08-2020', '17-08-2020', '23-08-2020', '29-08-2020', '04-09-2020', '10-09-2020', '16-09-2020', '28-09-2020', '04-10-2020', '10-10-2020', '16-10-2020', '22-10-2020', '03-11-2020', '15-11-2020', '27-11-2020', '09-12-2020', '15-12-2020', '21-12-2020', '27-12-2020', '02-01-2021', '14-01-2021', '26-01-2021', '01-02-2021', '07-02-2021', '13-02-2021', '19-02-2021', '25-02-2021', '03-03-2021', '09-03-2021', '15-03-2021', '21-03-2021', '27-03-2021', '02-04-2021', '08-04-2021', '14-04-2021', '20-04-2021', '26-04-2021', '02-05-2021', '14-05-2021', '26-05-2021'];
   
-  // Crear canvas para el gráfico
+var values = [data. D_20200108, data. D_20200120, data. D_20200201, data. D_20200213, data. D_20200308, data. D_20200320, data. D_20200401, data. D_20200413, data. D_20200425, data. D_20200507, data. D_20200519, data. D_20200531, data. D_20200612, data. D_20200624, data. D_20200706, data. D_20200718, data. D_20200730, data. D_20200805, data. D_20200805, data. D_20200811, data. D_20200817, data. D_20200823, data. D_20200829, data. D_20200904, data. D_20200910, data. D_20200916, data. D_20200928, data. D_20201004, data. D_20201010, data. D_20201016, data.D_20201022, data. D_20201103, data. D_20201115, data. D_20201127, data. D_20201209, data. D_20201215, data. D_20201221, data. D_20201227, data. D_20210102, data. D_20210114, data. D_20210126, data. D_20210201, data. D_20210207, data. D_20210213, data. D_20210219, data. D_20210225, data. D_20210303, data. D_20210309, data. D_20210315, data. D_20210321, data. D_20210327, data. D_20210402, data. D_20210408, data. D_20210414, data. D_20210420, data. D_20210426, data. D_20210502, data. D_20210514, data. D_20210526];
+
+  
   var chartContainer = document.createElement('div');
   var chartCanvas = document.createElement('canvas');
   chartContainer.appendChild(chartCanvas);
   
-  // Inicializar gráfico en Chart.js
   var chart = new Chart(chartCanvas, {
     type: 'line',
     data: {
@@ -535,25 +502,134 @@ function createChart(data) {
       }]
     },
     options: {
-      scales: {
-        y: {
-          label: 'Desplazamiento',
-        },
-        x: {
-          label: 'Fecha'
-        }
-      }
+     
+        scales: {
+yAxes: [{
+    height: 3000, // valor en pixels
+
+scaleLabel: {
+display: true,
+labelString: 'Desplazamiento (m)',
+},
+ticks: {
+    beginAtZero: true,
+suggestedMin: 4,
+stepSize: 5,
+callback: function(value, index, values) {
+return value/* + 'm'*/;
+}
+},
+gridLines: {
+        drawBorder: false
+      },
+      height: 1000 // valor en pixels
+}],
+xAxes: [{
+    width: 5000,
+scaleLabel: {
+display: false,
+labelString: 'Fecha'
+},
+ticks: {
+    autoSkip: true,
+stepSize: 10
+},
+gridLines: {
+        drawBorder: false
+      },
+      width: 1 // valor en pixels
+
+}]
+}
     }
+  });
+  window.addEventListener("resize", function() {
+    chart.canvas.width = 10000;
+    chart.canvas.height = 9800;
+    chart.update();
   });
   return chartContainer;
 }
+
+// Función para ajustar el tamaño del canvas al tamaño del contenedor
+function adjustCanvasSize() {
+chartCanvas.width = chartContainer.offsetWidth;
+chartCanvas.height = chartContainer.offsetHeight;
+}
+// Llamar a la función adjustCanvasSize cuando se detecte un cambio en la resolución de la pantalla
+window.addEventListener("resize", adjustCanvasSize);
+// Llamar a la función adjustCanvasSize al inicializar la página
+adjustCanvasSize();
+
+
+//KML IMPORTADO//   
+    // Añadir un input para seleccionar el archivo KML
+    var kmlData;
+    var input = document.getElementById('file');
+input.addEventListener('change', handleFileSelect);
+
+// Función que maneja la selección del archivo KML
+function handleFileSelect(event) {
+  var file = event.target.files[0];
+  var reader = new FileReader();
+  reader.addEventListener('load', function (e) {
+    // Eliminar la capa anterior si existe
+    if (map.getLayer('polygon')) {
+      map.removeLayer('polygon');
+      map.removeSource('polygon');
+    }
+    var kml = e.target.result;
+    var features = toGeoJSON.kml(
+      (new DOMParser()).parseFromString(kml, 'text/xml')
+    ).features;
+    var polygon = features.find(function (feature) {
+      return feature.geometry.type === 'Polygon';
+    });
+    if (!polygon) {
+      return alert('El archivo KML no contiene un polígono válido.');
+    }
+    map.addSource('polygon', {
+      type: 'geojson',
+      data: polygon
+    });
+    map.addLayer({
+      id: 'polygon',
+      type: 'fill',
+      source: 'polygon',
+      paint: {
+        'fill-color': '#088',
+        'fill-opacity': 0.8
+      }
+    });
+    map.fitBounds(turf.bbox(polygon), {
+      padding: 20
+    });
+  });
+  reader.readAsText(file);
+}
+
+// Función que maneja el cambio de mapa base
+function handleMapStyleChange() {
+  // Eliminar la capa anterior si existe
+  if (map.getLayer('polygon')) {
+    map.removeLayer('polygon');
+    map.removeSource('polygon');
+  }
+ 
+
+}
 };//Fin función principal
+
 ////////Cambio mapa base////////
         map.on('style.load', function () {
             addSource();
             addLayer();
-          
+            handleFileSelect();
         });
+        map.on('style.change', function () {
+            
+  handleFileSelect();
+});
         function switchLayer(layer) {
             var layerId = layer.target.id;
             map.setStyle('mapbox://styles/srgis/' + layerId);
@@ -589,6 +665,9 @@ $(document).ready(function(e) {
             useCORS: true,
             logging: true,
             onrendered: function(interfaceCanvas) {
+                var mapCanvas = map.getCanvas(); // Obtener instancia del canvas del mapa
+                canvas.width = mapCanvas.width; // Ajustar ancho de la interfaz al ancho del mapa
+                canvas.height = mapCanvas.height; // Ajustar alto de la interfaz al alto del mapa
                 var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
                 var imgData = combinedCanvas.toDataURL('image/png', 1.0);
                 var link = document.createElement('a');
@@ -616,6 +695,9 @@ $(document).ready(function(e) {
 </body>
 
 </html>
+
+
+
 
 
 
