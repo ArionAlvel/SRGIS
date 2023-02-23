@@ -10,9 +10,9 @@
         <link rel="stylesheet" href="style.css">
         <!--Mapbox js -->
         <link
-            href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css"
+            href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css"
             rel="stylesheet">
-        <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
         <!--Tipografías -->
         <link
             href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap"
@@ -27,9 +27,11 @@
         <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
         <!--JQuery-->
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <!--Gráfico-->
+        Gráfico
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+
         <!--Canva to html-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script
@@ -58,9 +60,8 @@
             <!-- Mapas Base -->
             <div id="map"></div>
             <!-- Gráfico -->
-            <div id="popup" style="display: none">
-                <canvas id="chart" willreadfrequently="willReadFrequently"></canvas>
-            </div>
+            <!--<div id="popup" style="display: none"> <canvas id="chart"
+            willreadfrequently="willReadFrequently"></canvas> </div>*/-->
             <!-- Exportar mapa -->
             <a id="downloadLink" href="" download="map.png">Download ↓</a>
             <div id="image"></div>
@@ -221,7 +222,6 @@
         <div class="blank">
             <div id="circle"></div>
         </div>
-        <!-- Gráfico -->
         <div class="blank2">
 
             <div
@@ -313,6 +313,7 @@
                 'layout': {
                     'visibility': 'visible'
                 },
+                'interactive': 'true',
                 'paint': {
                     'circle-radius': 3,
                     'circle-color': 'rgba(204,102,0,1)'
@@ -524,7 +525,6 @@
 
             //Gráfico
             var popup;
-            var screenResolutionCheckInterval = null;
             map.on('mousemove', function (e) {
                 var features = map.queryRenderedFeatures(e.point, {layers: ['puntosRadar']});
                 if (features.length) {
@@ -535,8 +535,12 @@
                     var data = features[0].properties;
                     if (!popup) {
                         popup = new mapboxgl.Popup(
-                            {closeOnClick: false, anchor: 'bottom', interactive: false, maxWidth: '10000px', maxHeight: '8000px'}
-                        );
+                           { closeOnClick: false,
+                            anchor: 'bottom',
+                            interactive: false,
+                            maxWidth: '1000px',
+                            maxHeight: '400px'
+                        });
                     }
                     var chart = createChart(data);
                     if (chart) {
@@ -545,10 +549,6 @@
                             .setDOMContent(chart)
                             .addTo(map);
                     }
-
-                    canvas
-                        .getContext('2d')
-                        .willReadFrequently = true;
                     map
                         .getCanvas()
                         .style
@@ -691,8 +691,13 @@
                 ];
 
                 var chartContainer = document.createElement('div');
+                chartContainer.style.width = '100%'; // Ajustar el ancho del contenedor del gráfico en píxeles
+                chartContainer.style.height = '100%'; // Ajustar el alto del contenedor del gráfico en píxeles
                 var chartCanvas = document.createElement('canvas');
+                chartCanvas.width = (window.innerWidth * 0.7); // Ajustar el ancho del canvas del gráfico en función del ancho de la pantalla
+                chartCanvas.height = (window.innerHeight * 0.5); // Ajustar el alto del canvas del gráfico en función del alto de la pantalla
                 chartContainer.appendChild(chartCanvas);
+                
 
                 var chart = new Chart(chartCanvas, {
                     type: 'line',
@@ -709,20 +714,20 @@
                         ]
                     },
                     options: {
-
+                        legend: {
+                            display: true // Ocultar la leyenda del gráfico
+                        },
                         scales: {
                             yAxes: [
                                 {
-                                    height: 3000, // valor en pixels
-
                                     scaleLabel: {
                                         display: true,
                                         labelString: 'Desplazamiento (m)'
                                     },
                                     ticks: {
                                         beginAtZero: true,
-                                        suggestedMin: 4,
-                                        stepSize: 5,
+                                        suggestedMin: 10,
+                                        stepSize: 4,
                                         callback: function (value, index, values) {
                                             return value/* + 'm'*/;
                                         }
@@ -730,48 +735,30 @@
                                     gridLines: {
                                         drawBorder: false
                                     },
-                                    height: 1000 // valor en pixels
+                                    height: 300 // Ajustar el alto del eje y en píxeles
                                 }
                             ],
                             xAxes: [
                                 {
-                                    width: 5000,
                                     scaleLabel: {
                                         display: false,
                                         labelString: 'Fecha'
                                     },
                                     ticks: {
                                         autoSkip: true,
-                                        stepSize: 10
+                                        stepSize: 20
                                     },
                                     gridLines: {
                                         drawBorder: false
                                     },
-                                    width: 1 // valor en pixels
-
+                                    width: 500 // Ajustar el ancho del eje x en píxeles
                                 }
                             ]
                         }
                     }
                 });
-                window.addEventListener("resize", function () {
-                    chart.canvas.width = 10000;
-                    chart.canvas.height = 9800;
-                    chart.update();
-                });
                 return chartContainer;
             }
-
-            // Función para ajustar el tamaño del canvas al tamaño del contenedor
-            function adjustCanvasSize() {
-                chartCanvas.width = chartContainer.offsetWidth;
-                chartCanvas.height = chartContainer.offsetHeight;
-            }
-            // Llamar a la función adjustCanvasSize cuando se detecte un cambio en la
-            // resolución de la pantalla
-            window.addEventListener("resize", adjustCanvasSize);
-            // Llamar a la función adjustCanvasSize al inicializar la página
-            adjustCanvasSize();
 
             //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
             var kmlData;
@@ -822,12 +809,15 @@
 
             // Función que maneja el cambio de mapa base
             function handleMapStyleChange() {
-                // Eliminar la capa anterior si existe
-                if (map.getLayer('polygon')) {
-                    map.removeLayer('polygon');
-                    map.removeSource('polygon');
+                var polygonLayer = map.getLayer('polygon');
+                if (polygonLayer) {
+                    var visibility = map.getLayoutProperty('polygon', 'visibility');
+                    if (visibility === 'visible') {
+                        map.setLayoutProperty('polygon', 'visibility', 'none');
+                    } else {
+                        map.setLayoutProperty('polygon', 'visibility', 'visible');
+                    }
                 }
-
             }
         }; //Fin función principal
 
