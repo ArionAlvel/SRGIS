@@ -249,7 +249,7 @@
         ////////Llamado mapa base/////////
         mapboxgl.accessToken = 'pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYV' +
                 'tfVOkahg';
-        const map = new mapboxgl.Map({
+        var map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true', // style URL
             center: [
@@ -760,65 +760,7 @@
                 return chartContainer;
             }
 
-            //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
-            var kmlData;
-            var input = document.getElementById('file');
-            input.addEventListener('change', handleFileSelect);
-
-            // Función que maneja la selección del archivo KML
-            function handleFileSelect(event) {
-                var file = event
-                    .target
-                    .files[0];
-                var reader = new FileReader();
-                reader.addEventListener('load', function (e) {
-                    // Eliminar la capa anterior si existe
-                    if (map.getLayer('polygon')) {
-                        map.removeLayer('polygon');
-                        map.removeSource('polygon');
-                    }
-                    var kml = e.target.result;
-                    var features = toGeoJSON
-                        .kml(
-                            (new DOMParser()).parseFromString(kml, 'text/xml')
-                        )
-                        .features;
-                    var polygon = features.find(function (feature) {
-                        return feature.geometry.type === 'Polygon';
-                    });
-                    if (!polygon) {
-                        return alert('El archivo KML no contiene un polígono válido.');
-                    }
-                    map.addSource('polygon', {
-                        type: 'geojson',
-                        data: polygon
-                    });
-                    map.addLayer({
-                        id: 'polygon',
-                        type: 'fill',
-                        source: 'polygon',
-                        paint: {
-                            'fill-color': '#088',
-                            'fill-opacity': 0.8
-                        }
-                    });
-                    map.fitBounds(turf.bbox(polygon), {padding: 20});
-                });
-                reader.readAsText(file);
-            }
-
-            // Función que maneja el cambio de mapa base
-            function handleMapStyleChange() {
-                var polygonLayer = map.getLayer('polygon');
-                if (polygonLayer) {
-                    var visibility = map.getLayoutProperty('polygon', 'visibility');
-                    if (visibility === 'visible') {
-                        map.setLayoutProperty('polygon', 'visibility', 'none');
-                    } else {
-                        map.setLayoutProperty('polygon', 'visibility', 'visible');
-                    }
-                }
-            }
+           
         }; //Fin función principal
 
         ////////Cambio mapa base////////
@@ -898,6 +840,100 @@
                 return combinedCanvas;
             }
         });
+     ///////Poligono importado///////
+     function addPolygonToMap(mapInstance, polygon) {
+        if (!polygon) {
+            return alert('El archivo KML no contiene un polígono válido.');
+        }
+    
+        mapInstance.addSource('polygon', {
+            type: 'geojson',
+            data: polygon
+        });
+    
+        mapInstance.addLayer({
+            id: 'polygon',
+            type: 'fill',
+            source: 'polygon',
+            paint: {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
+          // ajustar vista del mapa principal
+          if (polygon) {
+            map.fitBounds(turf.bbox(polygon), {padding: 20});
+        }
+    }
+    
+    map.on('load', function () {
+        //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
+        var kmlData;
+        var input = document.getElementById('file');
+        input.addEventListener('change', handleFileSelect);
+    
+        // Función que maneja la selección del archivo KML
+        function handleFileSelect(event) {
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.addEventListener('load', function (e) {
+                // Eliminar la capa anterior si existe en el mapa principal
+                if (map.getLayer('polygon')) {
+                    map.removeLayer('polygon');
+                    map.removeSource('polygon');
+                }
+                var kml = e.target.result;
+                var features = toGeoJSON
+                    .kml(
+                        (new DOMParser()).parseFromString(kml, 'text/xml')
+                    )
+                    .features;
+                var polygon = features.find(function (feature) {
+                    return feature.geometry.type === 'Polygon';
+                });
+    
+                addPolygonToMap(map, polygon); // añadir a mapa principal
+    
+                // añadir a otros mapas base
+                mapboxgl.mapboxDatasets.forEach(function (dataset) {
+                    if (dataset.name === 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?') {
+                        return; // saltar mapa base actual
+                    }
+                    var otherMapInstance = dataset.getMap();
+                    addPolygonToMap(otherMapInstance, polygon);
+                });
+    
+              
+            });
+            reader.readAsText(file);
+        }
+        for (var i = 0; i < maps.length; i++) {
+            var mapInstance = maps[i];
+            mapInstance.addLayer({
+                id: 'polygon',
+                type: 'fill',
+                source: 'polygon',
+                paint: {
+                    'fill-color': '#088',
+                    'fill-opacity': 0.8
+                }
+            });
+        }
+        
+        // Función que maneja el cambio de mapa base
+        function handleMapStyleChange() {
+            var polygonLayer = map.getLayer('polygon');
+            if (polygonLayer) {
+                var visibility = map.getLayoutProperty('polygon', 'visibility');
+                if (visibility === 'visible') {
+                    map.setLayoutProperty('polygon', 'visibility', 'none');
+                } else {
+                    map.setLayoutProperty('polygon', 'visibility', 'visible');
+                }
+            }
+        }
+    });
+    
     </script>
 </body>
 </html>
