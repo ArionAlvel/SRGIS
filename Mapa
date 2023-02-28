@@ -214,7 +214,7 @@
                 <div class="hid-box">
                     <div id="icon_imp">
                         <i class="material-icons" style="float:right;font-size:20px">file_upload</i>Cargar archivo</div>
-                    <input type="file" id="file" accept=".kml"/>
+                    <input type="file" id="file_input" accept=".kml"/>
                     <p id="Intruc_load">Formato compatible: kml</p>
                 </div>
             </div>
@@ -301,7 +301,7 @@
         /////////CAPAS////////
 
         function addSource() { //Función principal
-
+            
             //Puntos radar//
             map.addSource('importRadar', {
                 'type': 'vector',
@@ -793,7 +793,7 @@
         }
         
         // Función que maneja la selección del archivo KML
-        var kmlInput = document.getElementById('file');
+        var kmlInput = document.getElementById('file_input');
 kmlInput.addEventListener('change', handleFileSelect);
 
         function handleFileSelect(event) {
@@ -901,6 +901,7 @@ kmlInput.addEventListener('change', handleFileSelect);
                     'fill-opacity': 0.8
                 }
             });
+            
             // ajustar vista del mapa principal
             if (polygon) {
                 map.fitBounds(turf.bbox(polygon), {padding: 20});
@@ -910,8 +911,12 @@ kmlInput.addEventListener('change', handleFileSelect);
         map.on('load', function () {
             //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
             var kmlData;
-            var input = document.getElementById('file');
+            var input = document.getElementById('file_input');
             input.addEventListener('change', handleFileSelect);
+             // llama a handleFileSelect después de que el mapa cargue
+ 
+    handleFileSelect(document.getElementById('file-input').files[0]);
+  
 
         });
     </script>
