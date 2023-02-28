@@ -755,14 +755,7 @@
                 return chartContainer;
             }
 
-        }; //Fin función principal
-        map.on('style.load', function () {
-            addSource();
-            addLayer();
-            
-          });
-        ////////Cambio mapa base////////
-        // Cambio mapa base
+            ////////Cambio mapa base////////
         var kmlSourceName = 'polygon';
         var kmlLayerName = 'polygon';
         
@@ -800,7 +793,9 @@
         }
         
         // Función que maneja la selección del archivo KML
-        document.getElementById('file').addEventListener('change', handleFileSelect);
+        var kmlInput = document.getElementById('file');
+kmlInput.addEventListener('change', handleFileSelect);
+
         function handleFileSelect(event) {
           var file = event
             .target
@@ -817,6 +812,13 @@
           });
           reader.readAsText(file);
         }
+        
+        }; //Fin función principal
+        map.on('style.load', function () {
+            addSource();
+            addLayer();
+            
+          });
         
 
         ///////SideBar////////
