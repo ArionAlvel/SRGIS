@@ -249,7 +249,7 @@
         ////////Llamado mapa base/////////
         mapboxgl.accessToken = 'pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYV' +
                 'tfVOkahg';
-        var map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true', // style URL
             center: [
@@ -535,12 +535,8 @@
                     var data = features[0].properties;
                     if (!popup) {
                         popup = new mapboxgl.Popup(
-                           { closeOnClick: false,
-                            anchor: 'bottom',
-                            interactive: false,
-                            maxWidth: '1000px',
-                            maxHeight: '400px'
-                        });
+                            {closeOnClick: false, anchor: 'bottom', interactive: false, maxWidth: '1000px', maxHeight: '400px'}
+                        );
                     }
                     var chart = createChart(data);
                     if (chart) {
@@ -697,7 +693,6 @@
                 chartCanvas.width = (window.innerWidth * 0.7); // Ajustar el ancho del canvas del gráfico en función del ancho de la pantalla
                 chartCanvas.height = (window.innerHeight * 0.5); // Ajustar el alto del canvas del gráfico en función del alto de la pantalla
                 chartContainer.appendChild(chartCanvas);
-                
 
                 var chart = new Chart(chartCanvas, {
                     type: 'line',
@@ -760,26 +755,70 @@
                 return chartContainer;
             }
 
-           
         }; //Fin función principal
-
-        ////////Cambio mapa base////////
         map.on('style.load', function () {
             addSource();
             addLayer();
-            handleFileSelect();
-        });
-        map.on('style.change', function () {
-
-            handleFileSelect();
-        });
+            
+          });
+        ////////Cambio mapa base////////
+        // Cambio mapa base
+        var kmlSourceName = 'polygon';
+        var kmlLayerName = 'polygon';
+        
+        function addKMLLayer(map, kml) {
+          var features = toGeoJSON.kml((new DOMParser()).parseFromString(kml, 'text/xml')).features;
+          var polygon = features.find(function (feature) {
+            return feature.geometry.type === 'Polygon';
+          });
+        
+          addPolygonToMap(map, polygon, kmlSourceName, kmlLayerName); // añadir a mapa principal
+        }
+        
         function switchLayer(layer) {
-            var layerId = layer.target.id;
-            map.setStyle('mapbox://styles/srgis/' + layerId);
+          var layerId = layer.target.id;
+          // Remove KML layer and source
+          if (map.getLayer(kmlLayerName)) {
+            map.removeLayer(kmlLayerName);
+          }
+          if (map.getSource(kmlSourceName)) {
+            map.removeSource(kmlSourceName);
+          }
+          map.setStyle('mapbox://styles/srgis/' + layerId);
+          // Re-add KML layer and source
+          map.on('style.load', function () {
+            addSource();
+            addLayer();
+            if (kmlLayerName === 'polygon') {
+              handleFileSelect(); // Volver a agregar el archivo KML al mapa
+            }
+          });
         }
+        
         for (var i = 0; i < inputs.length; i++) {
-            inputs[i].onclick = switchLayer;
+          inputs[i].onclick = switchLayer;
         }
+        
+        // Función que maneja la selección del archivo KML
+        document.getElementById('file').addEventListener('change', handleFileSelect);
+        function handleFileSelect(event) {
+          var file = event
+            .target
+            .files[0];
+          var reader = new FileReader();
+          reader.addEventListener('load', function (e) {
+            // Eliminar la capa anterior si existe en el mapa principal
+            if (map.getLayer(kmlLayerName)) {
+              map.removeLayer(kmlLayerName);
+              map.removeSource(kmlSourceName);
+            }
+            var kml = e.target.result;
+            addKMLLayer(map, kml); // Añadir capa KML al mapa
+          });
+          reader.readAsText(file);
+        }
+        
+
         ///////SideBar////////
         /* Show-hide the SideBar */
         function SideBar_ShowHide() {
@@ -840,75 +879,17 @@
                 return combinedCanvas;
             }
         });
-     ///////Poligono importado///////
-     function addPolygonToMap(mapInstance, polygon) {
-        if (!polygon) {
-            return alert('El archivo KML no contiene un polígono válido.');
-        }
-    
-        mapInstance.addSource('polygon', {
-            type: 'geojson',
-            data: polygon
-        });
-    
-        mapInstance.addLayer({
-            id: 'polygon',
-            type: 'fill',
-            source: 'polygon',
-            paint: {
-                'fill-color': '#088',
-                'fill-opacity': 0.8
+        ///////Poligono importado///////
+        function addPolygonToMap(mapInstance, polygon) {
+            if (!polygon) {
+                return alert('El archivo KML no contiene un polígono válido.');
             }
-        });
-          // ajustar vista del mapa principal
-          if (polygon) {
-            map.fitBounds(turf.bbox(polygon), {padding: 20});
-        }
-    }
-    
-    map.on('load', function () {
-        //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
-        var kmlData;
-        var input = document.getElementById('file');
-        input.addEventListener('change', handleFileSelect);
-    
-        // Función que maneja la selección del archivo KML
-        function handleFileSelect(event) {
-            var file = event.target.files[0];
-            var reader = new FileReader();
-            reader.addEventListener('load', function (e) {
-                // Eliminar la capa anterior si existe en el mapa principal
-                if (map.getLayer('polygon')) {
-                    map.removeLayer('polygon');
-                    map.removeSource('polygon');
-                }
-                var kml = e.target.result;
-                var features = toGeoJSON
-                    .kml(
-                        (new DOMParser()).parseFromString(kml, 'text/xml')
-                    )
-                    .features;
-                var polygon = features.find(function (feature) {
-                    return feature.geometry.type === 'Polygon';
-                });
-    
-                addPolygonToMap(map, polygon); // añadir a mapa principal
-    
-                // añadir a otros mapas base
-                mapboxgl.mapboxDatasets.forEach(function (dataset) {
-                    if (dataset.name === 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?') {
-                        return; // saltar mapa base actual
-                    }
-                    var otherMapInstance = dataset.getMap();
-                    addPolygonToMap(otherMapInstance, polygon);
-                });
-    
-              
+
+            mapInstance.addSource('polygon', {
+                type: 'geojson',
+                data: polygon
             });
-            reader.readAsText(file);
-        }
-        for (var i = 0; i < maps.length; i++) {
-            var mapInstance = maps[i];
+
             mapInstance.addLayer({
                 id: 'polygon',
                 type: 'fill',
@@ -918,22 +899,19 @@
                     'fill-opacity': 0.8
                 }
             });
-        }
-        
-        // Función que maneja el cambio de mapa base
-        function handleMapStyleChange() {
-            var polygonLayer = map.getLayer('polygon');
-            if (polygonLayer) {
-                var visibility = map.getLayoutProperty('polygon', 'visibility');
-                if (visibility === 'visible') {
-                    map.setLayoutProperty('polygon', 'visibility', 'none');
-                } else {
-                    map.setLayoutProperty('polygon', 'visibility', 'visible');
-                }
+            // ajustar vista del mapa principal
+            if (polygon) {
+                map.fitBounds(turf.bbox(polygon), {padding: 20});
             }
         }
-    });
-    
+
+        map.on('load', function () {
+            //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
+            var kmlData;
+            var input = document.getElementById('file');
+            input.addEventListener('change', handleFileSelect);
+
+        });
     </script>
 </body>
 </html>
