@@ -28,10 +28,9 @@
         <!--JQuery-->
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
+        <!--Gráfico-->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <!--Gráfico <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+        <script src="https://unpkg.com/regression@3.0.0/regression.js"></script>
 
         <!--Canva to html-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -61,8 +60,14 @@
             <!-- Mapas Base -->
             <div id="map"></div>
             <!-- Gráfico -->
-            <!--<div id="popup" style="display: none"> <canvas id="chart"
-            willreadfrequently="willReadFrequently"></canvas> </div>*/-->
+            <div id="grafico-container" class="hidden">
+                <div id="grafico-cabecera">
+                    <button id="cerrar-grafico">X</button>
+                </div>
+                <div id="grafico"></div>
+                <div id="etiquetas"></div>
+            </div>
+
             <!-- Exportar mapa -->
             <a id="downloadLink" href="" download="map.png">Download ↓</a>
             <div id="image"></div>
@@ -507,332 +512,325 @@
                         : `<p>Índice espectral:</p>`;
             });
 
-            //////Gráfico////// Agregar la capa de puntos al mapa
-            map.addSource('puntosRadarS', {
+            // ////Gráfico////// Agregar la capa de puntos al mapa Configurar fuente de
+            // datos para los puntos.
+
+            map.addSource('puntos', {
                 type: 'vector',
-                url: 'mapbox://srgis.5p2q0jl7'
+                url: 'mapbox://srgis.5fcrwkg1'
             });
 
-            // Actualizar el código de color para los puntos
-            var valores = Object
-                .values(properties)
-                .slice(1);
-            var promedio = valores.reduce((a, b) => a + b) / valores.length;
-
-            var colorScale = [
-                [
-                    0, '#4B0082'
-                ],
-                [
-                    10, '#0000FF'
-                ],
-                [
-                    20, '#1E90FF'
-                ],
-                [
-                    30, '#00BFFF'
-                ],
-                [
-                    40, '#00FF00'
-                ],
-                [
-                    50, '#9ACD32'
-                ],
-                [
-                    60, '#FFFF00'
-                ],
-                [
-                    70, '#FFA500'
-                ],
-                [
-                    80, '#FF0000'
-                ],
-                [
-                    90, '#800000'
-                ]
-            ];
-
-            var color = '#000000'; // Color por defecto para evitar errores
-
-            for (var i = 0; i < colorScale.length; i++) {
-                if (promedio >= colorScale[i][0]) {
-                    color = colorScale[i][1];
-                } else {
-                    break;
+            // Configurar estilo de la capa de puntos.
+            map.addLayer({
+                'id': 'puntos',
+                'type': 'circle',
+                'source': 'puntos',
+                'source-layer': 'pRadar-68fq3m',
+                'paint': {
+                    // Aumentar el tamaño de los círculos a medida que el usuario se acerca.
+                    'circle-radius': {
+                        'property': 'Promedio',
+                        'stops': [
+                            [
+                                -24, 2
+                            ],
+                            [
+                                -12, 2.2
+                            ],
+                            [
+                                0, 2.4
+                            ],
+                            [
+                                4, 2.6
+                            ],
+                            [
+                                8, 2.8
+                            ],
+                            [
+                                17, 3
+                            ]
+                        ]
+                    },
+                    // Colorear los círculos según el valor de "Promedio" con un gradiente de color
+                    // que va desde el azul al rojo.
+                    'circle-color': {
+                        'property': 'Promedio',
+                        'stops': [
+                            [
+                                -24, '#3182bd'
+                            ],
+                            [
+                                -12, '#6baed6'
+                            ],
+                            [
+                                0, '#9ecae1'
+                            ],
+                            [
+                                4, '#e6550d'
+                            ],
+                            [
+                                8, '#fd8d3c'
+                            ],
+                            [
+                                17, '#fdae6b'
+                            ]
+                        ]
+                    }
                 }
+            });
+
+            const graficoContainer = document.getElementById("grafico-container");
+            const cerrarGrafico = document.getElementById("cerrar-grafico");
+            const graficoElement = document.getElementById("grafico");
+            const etiquetas = document.getElementById("etiquetas");
+
+            const colores = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"];
+            let graficosActivos = 0;
+            let grafico;
+            let puntosActivos = new Map();
+
+            function mostrarGrafico() {
+                graficoContainer
+                    .classList
+                    .remove("hidden");
             }
 
-            // Agregar el color al objeto properties
-            properties.color = color;
+            function ocultarGrafico() {
+                graficoContainer
+                    .classList
+                    .add("hidden");
+            }
 
-            // Modificar la capa para usar la propiedad 'color' en lugar de un color fijo
-            map.addLayer({
-                id: 'puntosRadar',
-                type: 'circle',
-                source: 'puntosRadarS',
-                'source-layer': 'ps-1rz791',
-                paint: {
-                    'circle-radius': {
-                        base: 1.75,
-                        stops: [
-                            [
-                                12, 2
-                            ],
-                            [
-                                22, 180
-                            ]
-                        ]
-                    },
-                    'circle-color': [
-                        'get', 'color'
-                    ],
-                    'circle-opacity': 0.8
-                }
-            });
-
-            // Modificar la función 'createChart' para que reciba los datos del punto
-            // seleccionado
-            function createChart(properties) {
-                var labels = [
-                    "Ene 2020",
-                    "Ene 2020",
-                    "Feb 2020",
-                    "Feb 2020",
-                    "Mar 2020",
-                    "Mar 2020",
-                    "Abr 2020",
-                    "Abr 2020",
-                    "Abr 2020",
-                    "May 2020",
-                    "May 2020",
-                    "May 2020",
-                    "Jun 2020",
-                    "Jun 2020",
-                    "Jul 2020",
-                    "Jul 2020",
-                    "Jul 2020",
-                    "Ago 2020",
-                    "Ago 2020",
-                    "Ago 2020",
-                    "Ago 2020",
-                    "Ago 2020",
-                    "Ago 2020",
-                    "Sept 2020",
-                    "Sept 2020",
-                    "Sept 2020",
-                    "Sept 2020",
-                    "Oct 2020",
-                    "Oct 2020",
-                    "Oct 2020",
-                    "Oct 2020",
-                    "Nov 2020",
-                    "Nov 2020",
-                    "Nov 2020",
-                    "Dic 2020",
-                    "Dic 2020",
-                    "Dic 2020",
-                    "Dic 2020",
-                    "Ene 2021",
-                    "Ene 2021",
-                    "Ene 2021",
-                    "Feb 2021",
-                    "Feb 2021",
-                    "Feb 2021",
-                    "Feb 2021",
-                    "Feb 2021",
-                    "Mar 2021",
-                    "Mar 2021",
-                    "Mar 2021",
-                    "Mar 2021",
-                    "Mar 2021",
-                    "Abr 2021",
-                    "Abr 2021",
-                    "Abr 2021",
-                    "Abr 2021",
-                    "Abr 2021",
-                    "May 2021",
-                    "May 2021",
-                    "May 2021"
-                ]; // Reemplazar con las fechas correspondientes
-                var values = [
-                    data.D_20200108,
-                    data.D_20200120,
-                    data.D_20200201,
-                    data.D_20200213,
-                    data.D_20200308,
-                    data.D_20200320,
-                    data.D_20200401,
-                    data.D_20200413,
-                    data.D_20200425,
-                    data.D_20200507,
-                    data.D_20200519,
-                    data.D_20200531,
-                    data.D_20200612,
-                    data.D_20200624,
-                    data.D_20200706,
-                    data.D_20200718,
-                    data.D_20200730,
-                    data.D_20200805,
-                    data.D_20200805,
-                    data.D_20200811,
-                    data.D_20200817,
-                    data.D_20200823,
-                    data.D_20200829,
-                    data.D_20200904,
-                    data.D_20200910,
-                    data.D_20200916,
-                    data.D_20200928,
-                    data.D_20201004,
-                    data.D_20201010,
-                    data.D_20201016,
-                    data.D_20201022,
-                    data.D_20201103,
-                    data.D_20201115,
-                    data.D_20201127,
-                    data.D_20201209,
-                    data.D_20201215,
-                    data.D_20201221,
-                    data.D_20201227,
-                    data.D_20210102,
-                    data.D_20210114,
-                    data.D_20210126,
-                    data.D_20210201,
-                    data.D_20210207,
-                    data.D_20210213,
-                    data.D_20210219,
-                    data.D_20210225,
-                    data.D_20210303,
-                    data.D_20210309,
-                    data.D_20210315,
-                    data.D_20210321,
-                    data.D_20210327,
-                    data.D_20210402,
-                    data.D_20210408,
-                    data.D_20210414,
-                    data.D_20210420,
-                    data.D_20210426,
-                    data.D_20210502,
-                    data.D_20210514,
-                    data.D_20210526
-                ]; // Reemplazar con los valores correspondientes
-
-                // Crear el contenedor del gráfico y ajustar su ancho y alto en píxeles
-                var chartContainer = document.createElement('div');
-                chartContainer.style.width = '500px';
-                chartContainer.style.height = '300px';
-
-                // Crear el canvas del gráfico y ajustar su ancho y alto en función del ancho y
-                // alto de la pantalla
-                var chartCanvas = document.createElement('canvas');
-                chartCanvas.width = (window.innerWidth * 0.7);
-                chartCanvas.height = (window.innerHeight * 0.5);
-                chartContainer.appendChild(chartCanvas);
-
-                // Calcular la línea de tendencia
-                var trendline = new Chart
-                    .Math
-                    .regression('linear', labels.map((_, i) => ({x: i, y: values[i]})))
-                    .points;
-
-                var chart = new Chart(chartCanvas, {
-                    type: 'line',
+            function crearGrafico() {
+                const ctx = graficoElement.getContext("2d");
+                grafico = new Chart(ctx, {
+                    type: "line",
                     data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Desplazamiento',
-                                data: values,
-                                backgroundColor: 'rgba(204,102,0,0.2)',
-                                borderColor: 'rgba(204,102,0,1)',
-                                borderWidth: 1
-                            }, {
-                                label: 'Línea de tendencia',
-                                data: trendline,
-                                fill: false,
-                                borderColor: 'rgba(0, 0, 0, 0.5)',
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                pointHitRadius: 5
-                            }
-                        ]
+                        datasets: []
                     },
                     options: {
-                        legend: {
-                            display: true // Ocultar la leyenda del gráfico
-                        },
                         scales: {
-                            yAxes: [
-                                {
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Desplazamiento (m)'
-                                    },
-                                    ticks: {
-                                        beginAtZero: true,
-                                        suggestedMin: 10,
-                                        stepSize: 4,
-                                        callback: function (value, index, values) {
-                                            return value/* + 'm'*/;
-                                        }
-                                    },
-                                    gridLines: {
-                                        drawBorder: false
-                                    },
-                                    height: 300 // Ajustar el alto del eje y en píxeles
-                                }
-                            ],
-                            xAxes: [
-                                {
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Fecha'
-                                    },
-                                    ticks: {
-                                        autoSkip: true,
-                                        stepSize: 20
-                                    },
-                                    gridLines: {
-                                        drawBorder: false
-                                    },
-                                    width: 500 // Ajustar el ancho del eje x en píxeles
-                                }
-                            ]
+                            x: {
+                                type: "time"
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                mode: "index",
+                                intersect: false
+                            }
                         }
                     }
                 });
-                return chartContainer;
             }
 
-            // Agregar listener para mostrar el gráfico al hacer clic en un punto
-            map.on('click', 'puntosRadar', function (e) {
-                // Obtener las propiedades del punto seleccionado
-                var properties = e
+            function agregarGrafico(punto) {
+                if (graficosActivos >= 5) {
+                    alert("Máximo 5 puntos por gráfico. Elimina alguno para poder agregar más.");
+                    return;
+                }
+
+                const id = "punto-" + graficosActivos;
+                const etiqueta = document.createElement("div");
+                etiqueta
+                    .classList
+                    .add("etiqueta");
+                etiqueta.textContent = "Gráfico " + (
+                    graficosActivos + 1
+                );
+                etiqueta.style.backgroundColor = colores[graficosActivos % colores.length];
+                etiqueta.addEventListener("click", () => {
+                    eliminarGrafico(id);
+                });
+                etiquetas.appendChild(etiqueta);
+
+                const datasetLineal = {
+                    label: etiqueta.textContent,
+                    data: punto,
+                    borderColor: colores[graficosActivos % colores.length],
+                    backgroundColor: "transparent",
+                    borderWidth: 2,
+                    fill: false
+                };
+
+                const datasetTendencia = {
+                    label: etiqueta.textContent + " - Tendencia",
+                    data: calcularLineaDeTendencia(punto),
+                    borderColor: colores[graficosActivos % colores.length],
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [5, 5]
+                };
+
+                grafico
+                    .data
+                    .datasets
+                    .push(datasetLineal);
+                grafico
+                    .data
+                    .datasets
+                    .push(datasetTendencia);
+                grafico.update();
+
+                puntosActivos.set(id, [datasetLineal, datasetTendencia]);
+                graficosActivos++;
+            }
+
+            function eliminarGrafico(id) {
+                const datasets = puntosActivos.get(id);
+                if (datasets) {
+                    datasets.forEach((dataset) => {
+                        const index = grafico
+                            .data
+                            .datasets
+                            .indexOf(dataset);
+                        if (index > -1) {
+                            grafico
+                                .data
+                                .datasets
+                                .splice(index, 1);
+                        }
+                    });
+                    puntosActivos.delete(id);
+                    grafico.update();
+                    graficosActivos--;
+
+                    if (graficosActivos === 0) {
+                        ocultarGrafico();
+                    }
+                }
+            }
+
+            function calcularLineaDeTendencia(punto) {
+                // Transforma los datos del punto en un formato adecuado para la función de
+                // regresión
+               // const datos = Object
+               //     .keys(punto)
+               //     .map((key) => {
+               //         const fecha = new Date(key).getTime(); // Asume que las claves son fechas
+               //         const valor = punto[key]; // Asume que los valores son números
+               //         return [fecha, valor];
+                //    });
+
+                // Ajusta una línea de tendencia polinomial de grado 1 (lineal) a los datos
+               // const resultado = regression.polynomial(datos, {
+              //      order: 1,
+              //      precision: 10
+              //  });
+
+                // Transforma los puntos de la línea de tendencia en objetos adecuados para el
+                // gráfico
+             //   const lineaTendencia = resultado
+             //       .points
+             //       .map(([fecha, valor]) => {
+             //           return {x: new Date(fecha), y: valor};
+//});
+
+             //   return lineaTendencia;
+            }
+            function alternarGrafico(e) {
+                const puntoId = e
                     .features[0]
-                    .properties;
+                    .id;
+                if (puntosActivos.has("punto-" + puntoId)) {
+                    eliminarGrafico("punto-" + puntoId);
+                } else {
+                    const punto = e
+                        .features[0]
+                        .properties; // Asume que las propiedades contienen los datos necesarios para el gráfico.
+                    agregarGrafico(punto);
+                }
+            }
 
-                // Crear el gráfico con los datos del punto seleccionado y la línea de tendencia
-                var chartContainer = createChart(properties);
-
-                // Agregar el contenedor del gráfico al body del documento
-                document
-                    .body
-                    .appendChild(chartContainer);
+            map.on("click", "puntos", (e) => {
+                alternarGrafico(e);
             });
 
-            // Mostrar el cursor como un puntero al pasar sobre los puntos
-            map.on('mouseenter', 'puntosRadar', function () {
+            cerrarGrafico.addEventListener("click", () => {
+                ocultarGrafico();
+                puntosActivos.forEach((_, id) => {
+                    eliminarGrafico(id);
+                });
+            });
+
+            // Cambiar el color y el tamaño del punto al hacer clic en él
+            map.on("click", "puntos", (e) => {
+                const puntoId = e
+                    .features[0]
+                    .id;
+                const activo = puntosActivos.has("punto-" + puntoId);
+
+                map.setFeatureState({
+                    source: "puntos",
+                    sourceLayer: "pRadar-68fq3m",
+                    id: puntoId
+                }, {activo: activo});
+
+                const radio = activo
+                    ? 5
+                    : 2;
+                const color = activo
+                    ? "#ffffff"
+                    : "#000000";
+                map.setPaintProperty("puntos", "circle-radius", [
+                    "case",
+                    [
+                        "boolean",
+                        [
+                            "feature-state", "activo"
+                        ],
+                        false
+                    ],
+                    radio,
+                    2
+                ]);
+                map.setPaintProperty("puntos", "circle-color", [
+                    "case",
+                    [
+                        "boolean",
+                        [
+                            "feature-state", "activo"
+                        ],
+                        false
+                    ],
+                    color,
+                    [
+                        "interpolate",
+                        ["linear"],
+                        [
+                            "get", "Promedio"
+                        ],
+                        -24,
+                        "#3182bd",
+                        -12,
+                        "#6baed6",
+                        0,
+                        "#9ecae1",
+                        4,
+                        "#e6550d",
+                        8,
+                        "#fd8d3c",
+                        17,
+                        "#fdae6b"
+                    ]
+                ]);
+            });
+
+            crearGrafico();
+            //Cambia el puntero al pasar sobre punto
+            map.on("mouseenter", "puntos", () => {
                 map
                     .getCanvas()
                     .style
-                    .cursor = 'pointer';
+                    .cursor = "pointer";
             });
 
-            // Cambiar el cursor a su valor por defecto al salir de los puntos
-            map.on('mouseleave', 'puntosRadar', function () {
+            map.on("mouseleave", "puntos", () => {
                 map
                     .getCanvas()
                     .style
-                    .cursor = '';
+                    .cursor = "";
             });
 
             ////////Cambio mapa base////////
