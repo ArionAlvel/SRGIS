@@ -389,7 +389,26 @@
             puntosActivos.set(id, [datasetLineal]);
             graficosActivos++;
         }
-
+        function alternarGrafico(e) {
+            console.log("Click event triggered"); // Agrega esta línea
+            const punto = e.features[0].properties;
+          
+            const puntoArray = Object.entries(punto).map(([key, value]) => {
+              if (key !== "Promedio" && !isNaN(Date.parse(key)) && !isNaN(value)) {
+                const dateParts = key.split("-");
+                const formattedDate = `20${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+                return {
+                  x: formattedDate,
+                  y: value
+                };
+              }
+              return null;
+            }).filter(entry => entry !== null);
+          
+            console.log("Processed data:", puntoArray); // Agrega esta línea
+            agregarGrafico(puntoArray);
+          }
+          
         function addSource() {
             map.addSource('puntos', {
                 type: 'vector',
