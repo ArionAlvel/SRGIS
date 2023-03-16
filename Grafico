@@ -518,9 +518,7 @@
             reader.readAsText(file);
 
         }; //Fin función principal
-        map.on("click", "puntos", (e) => {
-            alternarGrafico(e);
-        });
+        map.on("click", "puntos", alternarGrafico);
 
         cerrarGrafico.addEventListener("click", () => {
             ocultarGrafico();
