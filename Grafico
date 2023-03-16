@@ -498,14 +498,23 @@
                     }
                   }
                 
-                  // Cambiar el puntero al pasar sobre punto
-                  map.on("mouseenter", "puntos", () => {
-                    map.getCanvas().style.cursor = "pointer";
-                  });
-                
-                  map.on("mouseleave", "puntos", () => {
-                    map.getCanvas().style.cursor = "";
-                  });
+                  // Espera a que la capa de puntos se cargue antes de agregar eventos
+  map.on('idle', function () {
+    if (map.getLayer('puntos')) {
+      // Agrega eventos para la capa de puntos
+      map.on("mouseenter", "puntos", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mouseleave", "puntos", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
+      map.on("click", "puntos", (e) => {
+        alternarGrafico({features: [e]});
+      });
+    }
+  });
                 
                
                 }
