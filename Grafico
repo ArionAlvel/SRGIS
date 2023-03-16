@@ -29,8 +29,12 @@
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
         <!--Gráfico-->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://unpkg.com/regression@3.0.0/regression.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
+        <script src="https://unpkg.com/regression@2.0.1/regression.min.js"></script>
+
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 
         <!--Canva to html-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -306,532 +310,207 @@
         map.addControl(new mapboxgl.ScaleControl({position: 'bottom-right'}));
         /////////CAPAS////////
 
-        function addSource() { //Función principal
-
-            // Aster TIR//
-            map.addSource('AsterTIR', { //id para la funcion
-                type: 'vector',
-                url: 'mapbox://srgis.cf6bosyu/'
-            });
-            map.addLayer({
-                'id': 'ASTER TIR', //id funcion add layer
-                'type': 'fill',
-                'source': 'AsterTIR', //id funcion addsource
-                'source-layer': 'TIR-2es0qf', //nombre vector layer
-                'minzoom': 3,
-                'maxzoom': 0,
-                'layout': {
-                    'visibility': 'visible'
-                },
-                'paint': {
-                    "fill-color": {
-                        property: 'CLASS_NAME',
-                        type: 'categorical',
-                        stops: [
-                            [
-                                'Carbonato +', '#FF00FF'
-                            ],
-                            [
-                                'Carbonato -', '#800080'
-                            ],
-                            [
-                                'Cuarzo +', '#1F51FF'
-                            ],
-                            [
-                                'Cuarzo -', '#00008B'
-                            ]
-                        ]
-                    },
-                    'fill-opacity': 0.6
-                }
-            });
-            //Aster VNIR//
-            map.addSource('AsterVNIR', { //id para la funcion
-                type: 'vector',
-                url: 'mapbox://srgis.92rokv2i/'
-            });
-            map.addLayer({
-                'id': 'ASTER VNIR', //id funcion add layer
-                'type': 'fill',
-                'source': 'AsterVNIR', //id funcion addsource
-                'source-layer': 'VNIR-abfvcs', //nombre vector layer
-                'minzoom': 8,
-                'maxzoom': 0,
-                'layout': {
-                    'visibility': 'visible'
-                },
-                'paint': {
-                    "fill-color": {
-                        property: 'CLASS_NAME',
-                        type: 'categorical',
-                        stops: [
-                            [
-                                'Férrico +', '#FF0000'
-                            ],
-                            [
-                                'Férrico -', '#6F0000'
-                            ],
-                            [
-                                'Ferroso +', '#00FF00'
-                            ],
-                            [
-                                'Ferroso -', '#008400'
-                            ]
-                        ]
-                    },
-                    'fill-opacity': 0.6
-                }
-            });
-            //Aster SWIR//
-            map.addSource('AsterSWIR', { //id para la funcion
-                type: 'vector',
-                url: 'mapbox://srgis.bjmziz7k/'
-            });
-            map.addLayer({
-                'id': 'ASTER SWIR', //id funcion add layer
-                'type': 'fill',
-                'source': 'AsterSWIR', //id funcion addsource
-                'source-layer': 'SWIR-7slhva', //nombre vector layer
-                'minzoom': 8,
-                'maxzoom': 0,
-                'layout': {
-                    'visibility': 'visible'
-                },
-                'paint': {
-                    "fill-color": {
-                        property: 'CLASS_NAME',
-                        type: 'categorical',
-                        stops: [
-                            [
-                                'Propilítico', '#27AE60'
-                            ],
-                            [
-                                'Jarosita', '#7B241C'
-                            ],
-                            [
-                                'Carbonatos', '#BF40BF'
-                            ],
-                            [
-                                'Argílica/Fílica', '#FF7F50'
-                            ],
-                            [
-                                'Argílica Avanzada', '#FFC000'
-                            ]
-                        ]
-                    },
-                    'fill-opacity': 0.6
-                }
-            });
-            //lineamientos//
-            map.addSource('Estructuras', { //id para la funcion
-                type: 'vector',
-                url: 'mapbox://srgis.36126udf'
-            });
-            map.addLayer({
-                'id': 'Lineamientos', //id funcion add layer
-                'type': 'line',
-                'source': 'Estructuras', //id funcion addsource
-                'source-layer': 'FM-bt3zr2', //nombre vector layer
-                'layout': {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-                'paint': {
-                    'line-color': '#000019',
-                    'line-width': 1.8,
-                    'line-dasharray': [2, 3]
-                }
-            });
-
-            ///////CONTROL DE TRANSPARENCIA///////
-            const slider = document.getElementById('slider');
-            const sliderValue = document.getElementById('slider-value');
-            const slider2 = document.getElementById('slider2');
-            const sliderValue2 = document.getElementById('slider-value2');
-            const slider3 = document.getElementById('slider3');
-            const sliderValue3 = document.getElementById('slider-value3');
-            slider.addEventListener('input', (e) => {
-                map.setPaintProperty(
-                    'ASTER TIR',
-                    'fill-opacity',
-                    parseInt(e.target.value, 10) / 100,
-                );
-                //Value indicator
-                sliderValue.textContent = e.target.value + '%';
-                //Ocultar en 0
-                if (sliderValue.innerHTML == '0%') {
-                    map.setLayoutProperty('ASTER TIR', 'visibility', 'none');
-                } else {
-                    map.setLayoutProperty('ASTER TIR', 'visibility', 'visible');
-                }
-            });
-            slider2.addEventListener('input', (e) => {
-                map.setPaintProperty(
-                    'ASTER SWIR',
-                    'fill-opacity',
-                    parseInt(e.target.value, 10) / 100,
-                );
-                //Value indicator
-                sliderValue2.textContent = e.target.value + '%';
-                //Ocultar en 0
-                if (sliderValue2.innerHTML === '0%') {
-                    map.setLayoutProperty('ASTER SWIR', 'visibility', 'none');
-                } else {
-                    map.setLayoutProperty('ASTER SWIR', 'visibility', 'visible');
-                }
-            });
-            slider3.addEventListener('input', (e) => {
-                map.setPaintProperty(
-                    'ASTER VNIR',
-                    'fill-opacity',
-                    parseInt(e.target.value, 10) / 100,
-                );
-                //Value indicator
-                sliderValue3.textContent = e.target.value + '%';
-                //Ocultar en 0
-                if (sliderValue3.innerHTML === '0%') {
-                    map.setLayoutProperty('ASTER VNIR', 'visibility', 'none');
-                } else {
-                    map.setLayoutProperty('ASTER VNIR', 'visibility', 'visible');
-                }
-            });
-            // Cambia info en capas
-            map.on('mousemove', (event) => {
-                const states2 = map.queryRenderedFeatures(event.point, {
-                    layers: ['ASTER VNIR', 'ASTER SWIR', 'ASTER TIR']
+                  
+            function addSource() {
+                map.addSource('puntos', {
+                    type: 'vector',
+                    url: 'mapbox://srgis.4mbo7wer'
                 });
-                document
-                    .getElementById('pd')
-                    .innerHTML = states2.length
-                        ? `<h3 class='infoI'>Índice espectral: ${states2[0]
-                            .properties
-                            .CLASS_NAME}</h3>
-            <p class='subinfoI'>${states2[0]
-                            .properties
-                            .MXS}</p>`
-                        : `<p>Índice espectral:</p>`;
-            });
-
-            // ////Gráfico////// Agregar la capa de puntos al mapa Configurar fuente de
-            // datos para los puntos.
-
-            map.addSource('puntos', {
-                type: 'vector',
-                url: 'mapbox://srgis.5fcrwkg1'
-            });
-
-            // Configurar estilo de la capa de puntos.
-            map.addLayer({
-                'id': 'puntos',
-                'type': 'circle',
-                'source': 'puntos',
-                'source-layer': 'pRadar-68fq3m',
-                'paint': {
-                    // Aumentar el tamaño de los círculos a medida que el usuario se acerca.
-                    'circle-radius': {
-                        'property': 'Promedio',
-                        'stops': [
-                            [
-                                -24, 2
-                            ],
-                            [
-                                -12, 2.2
-                            ],
-                            [
-                                0, 2.4
-                            ],
-                            [
-                                4, 2.6
-                            ],
-                            [
-                                8, 2.8
-                            ],
-                            [
-                                17, 3
+    
+                // Configurar estilo de la capa de puntos.
+                map.addLayer({
+                    'id': 'puntos',
+                    'type': 'circle',
+                    'source': 'puntos',
+                    'source-layer': 'ps-6o86wq',
+                    'paint': {
+                        // Aumentar el tamaño de los círculos a medida que el usuario se acerca.
+                        'circle-radius': {
+                            'property': 'Promedio',
+                            'stops': [
+                                [
+                                    -24, 2
+                                ],
+                                [
+                                    -12, 2.2
+                                ],
+                                [
+                                    0, 2.4
+                                ],
+                                [
+                                    4, 2.6
+                                ],
+                                [
+                                    8, 2.8
+                                ],
+                                [
+                                    17, 3
+                                ]
                             ]
-                        ]
-                    },
-                    // Colorear los círculos según el valor de "Promedio" con un gradiente de color
-                    // que va desde el azul al rojo.
-                    'circle-color': {
-                        'property': 'Promedio',
-                        'stops': [
-                            [
-                                -24, '#3182bd'
-                            ],
-                            [
-                                -12, '#6baed6'
-                            ],
-                            [
-                                0, '#9ecae1'
-                            ],
-                            [
-                                4, '#e6550d'
-                            ],
-                            [
-                                8, '#fd8d3c'
-                            ],
-                            [
-                                17, '#fdae6b'
-                            ]
-                        ]
-                    }
-                }
-            });
-
-            const graficoContainer = document.getElementById("grafico-container");
-            const cerrarGrafico = document.getElementById("cerrar-grafico");
-            const graficoElement = document.getElementById("grafico");
-            const etiquetas = document.getElementById("etiquetas");
-
-            const colores = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"];
-            let graficosActivos = 0;
-            let grafico;
-            let puntosActivos = new Map();
-
-            function mostrarGrafico() {
-                graficoContainer
-                    .classList
-                    .remove("hidden");
-            }
-
-            function ocultarGrafico() {
-                graficoContainer
-                    .classList
-                    .add("hidden");
-            }
-
-            function crearGrafico() {
-                const ctx = graficoElement.getContext("2d");
-                grafico = new Chart(ctx, {
-                    type: "line",
-                    data: {
-                        datasets: []
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: "time"
-                            }
                         },
-                        plugins: {
-                            tooltip: {
-                                mode: "index",
-                                intersect: false
-                            }
+                        // Colorear los círculos según el valor de "Promedio" con un gradiente de color
+                        // que va desde el azul al rojo.
+                        'circle-color': {
+                            'property': 'Promedio',
+                            'stops': [
+                                [
+                                    -24, '#3182bd'
+                                ],
+                                [
+                                    -12, '#6baed6'
+                                ],
+                                [
+                                    0, '#9ecae1'
+                                ],
+                                [
+                                    4, '#e6550d'
+                                ],
+                                [
+                                    8, '#fd8d3c'
+                                ],
+                                [
+                                    17, '#fdae6b'
+                                ]
+                            ]
                         }
                     }
                 });
-            }
-
-            function agregarGrafico(punto) {
-                if (graficosActivos >= 5) {
+              
+                map.on("click", "puntos", (e) => {
+                  alternarGrafico(e);
+                });
+              
+                const graficoContainer = document.getElementById("grafico-container");
+                const cerrarGrafico = document.getElementById("cerrar-grafico");
+                const graficoElement = document.getElementById("grafico");
+                const etiquetas = document.getElementById("etiquetas");
+              
+                const colores = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"];
+                let graficosActivos = 0;
+                let grafico;
+                let puntosActivos = new Map();
+              
+                function mostrarGrafico() {
+                  graficoContainer.classList.remove("hidden");
+                }
+              
+                function ocultarGrafico() {
+                  graficoContainer.classList.add("hidden");
+                }
+              
+                function crearGrafico() {
+                  const ctx = graficoElement.getContext("2d");
+                  grafico = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                      datasets: []
+                    },
+                    options: {
+                      scales: {
+                        x: {
+                          type: "time"
+                        }
+                      },
+                      plugins: {
+                        tooltip: {
+                          mode: "index",
+                          intersect: false
+                        }
+                      }
+                    }
+                  });
+                }
+              
+                function agregarGrafico(data) {
+                  if (graficosActivos >= 5) {
                     alert("Máximo 5 puntos por gráfico. Elimina alguno para poder agregar más.");
                     return;
-                }
-
-                const id = "punto-" + graficosActivos;
-                const etiqueta = document.createElement("div");
-                etiqueta
-                    .classList
-                    .add("etiqueta");
-                etiqueta.textContent = "Gráfico " + (
-                    graficosActivos + 1
-                );
-                etiqueta.style.backgroundColor = colores[graficosActivos % colores.length];
-                etiqueta.addEventListener("click", () => {
-                    eliminarGrafico(id);
-                });
-                etiquetas.appendChild(etiqueta);
-
-                const datasetLineal = {
+                  }
+              
+                  const id = "punto-" + graficosActivos;
+                  const etiqueta = document.createElement("div");
+                  etiqueta.classList.add("etiqueta");
+                  etiqueta.textContent = "Gráfico " + (graficosActivos + 1);
+                  etiqueta.style.backgroundColor = colores[graficosActivos % colores.length];
+                  etiquetas.appendChild(etiqueta);
+              
+                  const datasetLineal = {
                     label: etiqueta.textContent,
-                    data: punto,
+                    data: data,
                     borderColor: colores[graficosActivos % colores.length],
                     backgroundColor: "transparent",
                     borderWidth: 2,
                     fill: false
-                };
-
-                const datasetTendencia = {
-                    label: etiqueta.textContent + " - Tendencia",
-                    data: calcularLineaDeTendencia(punto),
-                    borderColor: colores[graficosActivos % colores.length],
-                    backgroundColor: "transparent",
-                    borderWidth: 1,
-                    fill: false,
-                    borderDash: [5, 5]
-                };
-
-                grafico
-                    .data
-                    .datasets
-                    .push(datasetLineal);
-                grafico
-                    .data
-                    .datasets
-                    .push(datasetTendencia);
-                grafico.update();
-
-                puntosActivos.set(id, [datasetLineal, datasetTendencia]);
-                graficosActivos++;
-            }
-
-            function eliminarGrafico(id) {
-                const datasets = puntosActivos.get(id);
-                if (datasets) {
-                    datasets.forEach((dataset) => {
-                        const index = grafico
-                            .data
-                            .datasets
-                            .indexOf(dataset);
-                        if (index > -1) {
-                            grafico
-                                .data
-                                .datasets
-                                .splice(index, 1);
-                        }
-                    });
-                    puntosActivos.delete(id);
-                    grafico.update();
-                    graficosActivos--;
-
-                    if (graficosActivos === 0) {
-                        ocultarGrafico();
+                  };
+              
+                  grafico.data.datasets.push(datasetLineal);
+                  grafico.update();
+              
+                  puntosActivos.set(id, [datasetLineal]);
+                  graficosActivos++;
+                }
+              
+                function alternarGrafico(e) {
+                  const punto = e.features[0].properties;
+              
+                  const puntoArray = Object.entries(punto).map(([key, value]) => {
+                    if (key !== "Promedio" && !isNaN(Date.parse(key)) && !isNaN(value)) {
+                      const dateParts = key.split("-");
+                      const formattedDate = `20${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+                      return {
+                        x: formattedDate,
+                        y: value
+                      };
                     }
+                    return null;
+                  }).filter(entry => entry !== null);
+              
+                  agregarGrafico(puntoArray);
                 }
-            }
-
-            function calcularLineaDeTendencia(punto) {
-                // Transforma los datos del punto en un formato adecuado para la función de
-                // regresión
-               // const datos = Object
-               //     .keys(punto)
-               //     .map((key) => {
-               //         const fecha = new Date(key).getTime(); // Asume que las claves son fechas
-               //         const valor = punto[key]; // Asume que los valores son números
-               //         return [fecha, valor];
-                //    });
-
-                // Ajusta una línea de tendencia polinomial de grado 1 (lineal) a los datos
-               // const resultado = regression.polynomial(datos, {
-              //      order: 1,
-              //      precision: 10
-              //  });
-
-                // Transforma los puntos de la línea de tendencia en objetos adecuados para el
-                // gráfico
-             //   const lineaTendencia = resultado
-             //       .points
-             //       .map(([fecha, valor]) => {
-             //           return {x: new Date(fecha), y: valor};
-//});
-
-             //   return lineaTendencia;
-            }
-            function alternarGrafico(e) {
-                const puntoId = e
-                    .features[0]
-                    .id;
-                if (puntosActivos.has("punto-" + puntoId)) {
-                    eliminarGrafico("punto-" + puntoId);
-                } else {
-                    const punto = e
-                        .features[0]
-                        .properties; // Asume que las propiedades contienen los datos necesarios para el gráfico.
-                    agregarGrafico(punto);
+              
+                map.on("click", "puntos", (e) => {
+                    alternarGrafico(e);
+                  });
+                
+                  cerrarGrafico.addEventListener("click", () => {
+                    ocultarGrafico();
+                    puntosActivos.forEach((_, id) => {
+                      eliminarGrafico(id);
+                    });
+                  });
+                
+                  function eliminarGrafico(id) {
+                    const datasets = puntosActivos.get(id);
+                    if (datasets) {
+                      datasets.forEach((dataset) => {
+                        const index = grafico.data.datasets.indexOf(dataset);
+                        if (index > -1) {
+                          grafico.data.datasets.splice(index, 1);
+                        }
+                      });
+                      puntosActivos.delete(id);
+                      grafico.update();
+                      graficosActivos--;
+                
+                      if (graficosActivos === 0) {
+                        ocultarGrafico();
+                      }
+                    }
+                  }
+                
+                  // Cambiar el puntero al pasar sobre punto
+                  map.on("mouseenter", "puntos", () => {
+                    map.getCanvas().style.cursor = "pointer";
+                  });
+                
+                  map.on("mouseleave", "puntos", () => {
+                    map.getCanvas().style.cursor = "";
+                  });
+                
+               
                 }
-            }
-
-            map.on("click", "puntos", (e) => {
-                alternarGrafico(e);
-            });
-
-            cerrarGrafico.addEventListener("click", () => {
-                ocultarGrafico();
-                puntosActivos.forEach((_, id) => {
-                    eliminarGrafico(id);
-                });
-            });
-
-            // Cambiar el color y el tamaño del punto al hacer clic en él
-            map.on("click", "puntos", (e) => {
-                const puntoId = e
-                    .features[0]
-                    .id;
-                const activo = puntosActivos.has("punto-" + puntoId);
-
-                map.setFeatureState({
-                    source: "puntos",
-                    sourceLayer: "pRadar-68fq3m",
-                    id: puntoId
-                }, {activo: activo});
-
-                const radio = activo
-                    ? 5
-                    : 2;
-                const color = activo
-                    ? "#ffffff"
-                    : "#000000";
-                map.setPaintProperty("puntos", "circle-radius", [
-                    "case",
-                    [
-                        "boolean",
-                        [
-                            "feature-state", "activo"
-                        ],
-                        false
-                    ],
-                    radio,
-                    2
-                ]);
-                map.setPaintProperty("puntos", "circle-color", [
-                    "case",
-                    [
-                        "boolean",
-                        [
-                            "feature-state", "activo"
-                        ],
-                        false
-                    ],
-                    color,
-                    [
-                        "interpolate",
-                        ["linear"],
-                        [
-                            "get", "Promedio"
-                        ],
-                        -24,
-                        "#3182bd",
-                        -12,
-                        "#6baed6",
-                        0,
-                        "#9ecae1",
-                        4,
-                        "#e6550d",
-                        8,
-                        "#fd8d3c",
-                        17,
-                        "#fdae6b"
-                    ]
-                ]);
-            });
-
-            crearGrafico();
-            //Cambia el puntero al pasar sobre punto
-            map.on("mouseenter", "puntos", () => {
-                map
-                    .getCanvas()
-                    .style
-                    .cursor = "pointer";
-            });
-
-            map.on("mouseleave", "puntos", () => {
-                map
-                    .getCanvas()
-                    .style
-                    .cursor = "";
-            });
+                
+              
 
             ////////Cambio mapa base////////
             var kmlSourceName = 'polygon';
@@ -893,7 +572,7 @@
                     addKMLLayer(map, kml); // Añadir capa KML al mapa
                 });
                 reader.readAsText(file);
-            }
+           
 
         }; //Fin función principal
         map.on('style.load', function () {
