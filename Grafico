@@ -1,706 +1,741 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>SRGIS Mapa de Alteraciones Hidrotermales</title>
-        <meta name="description" content="meta-description.">
-        <!--Estilo Mapa -->
-        <link rel="stylesheet" href="style.css">
-        <!--Mapbox js -->
-        <link
-            href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css"
-            rel="stylesheet">
-        <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
-        <!--Tipografías -->
-        <link
-            href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap"
-            rel="stylesheet">
-        <link
-            href="https://fonts.googleapis.com/css2?family=Monda:wght@700&display=swap"
-            rel="stylesheet">
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <!--Turf -->
-        <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
-        <!--JQuery-->
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>SRGIS Mapa de Alteraciones Hidrotermales</title>
+		<meta name="description" content="meta-description." />
+		<!--Estilo Mapa -->
+		<link rel="stylesheet" href="style.css" />
+		<!--Mapbox js -->
+		<link
+			href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css"
+			rel="stylesheet"
+		/>
+		<script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+		<!--Tipografías -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Monda:wght@700&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+		/>
+		<!--Turf -->
+		<script src="https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js"></script>
+		<!--JQuery-->
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
-        <!--Gráfico-->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
-        <script
-            src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
-        <script src="https://unpkg.com/regression@2.0.1/regression.min.js"></script>
+		<!--Gráfico-->
+		<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+		<script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
+		<script src="https://unpkg.com/regression@2.0.1/regression.min.js"></script>
+		<script src="https://cdn.anychart.com/js/8.10.0/anychart-base.min.js"></script> <script src="https://cdn.anychart.com/js/8.10.0/anychart-ui.min.js"></script> <script src="https://cdn.anychart.com/js/8.10.0/anychart-exports.min.js"></script>
 
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-        <!--Canva to html-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
-        <!--Importador Kml-->
-        <script
-            src="https://cdn.jsdelivr.net/npm/@mapbox/togeojson@0.16.0/togeojson.js"></script>
-        <!--Scripts dibujador de polígonos -->
-        <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-        <script
-            src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
-        <link
-            rel="stylesheet"
-            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css"
-            type="text/css">
-        <!-- Geocoder -->
-        <script
-            src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-        <link
-            rel="stylesheet"
-            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"
-            type="text/css">
-    </head>
-    <body>
-        <main>
-            <!-- Mapas Base -->
-            <div id="map"></div>
-            <!-- Gráfico -->
-            <div id="grafico-container" class="hidden">
-                <div id="grafico-cabecera">
-                    <button id="cerrar-grafico">X</button>
-                </div>
-                <div id="grafico"></div>
-                <div id="etiquetas"></div>
-            </div>
+		<!--Canva to html-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+		<!--Importador Kml-->
+		<script src="https://cdn.jsdelivr.net/npm/@mapbox/togeojson@0.16.0/togeojson.js"></script>
+		<!--Scripts dibujador de polígonos -->
+		<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+		<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css"
+			type="text/css"
+		/>
+		<!-- Geocoder -->
+		<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"
+			type="text/css"
+		/>
+	</head>
+	<body>
+		<main>
+			<!-- Mapas Base -->
+			<div id="map"></div>
+			
+			<div id="poe"></div>
+			<!-- Gráfico -->
+			<!--<div id="myChartContainer">
+				<canvas id="myChart"></canvas>-->
+				
 
-            <!-- Exportar mapa -->
-            <a id="downloadLink" href="" download="map.png">Download ↓</a>
-            <div id="image"></div>
-            <!-- Contenido -->
-            <div class="Grilla">
-                <div class="Instrucciones">
-                    <a id="btn_Tuto" href="">!</a>
-                    <div>
-                        <h2>Controles</h2>
-                        <p>Click izquierdo para desplazar el mapa, rueda para zoom y click derecho para
-                            vista 3D.</p>
-                    </div>
-                </div>
-                <div class="MapaBase">
-                    <div class="Calc_area">
-                        <div id="polygon_info">i</div>
-                        <div id="calculated-area">
-                            <p>Dibuja un polígono para calcular su área.<br><br>Borrar polígono</p>
-                        </div>
-                    </div>
-                    <div class="C_MapaBase">
-                        <!-- Cambio Mapa Base -->
-                        <div id="menu">
-                            <input
-                                id="cl3ln6foa004b15l783jfr7cx"
-                                type="radio"
-                                name="rtoggle"
-                                value="SRGIS"
-                                checked="checked">
-                            <label for="cl3ln6foa004b15l783jfr7cx">SRGIS</label>
-                            <input
-                                id="cl3ln5mx0000f15s69t8vyrkh"
-                                type="radio"
-                                name="rtoggle"
-                                value="Satelite">
-                            <label for="cl3ln5mx0000f15s69t8vyrkh">Satélite</label>
-                            <input id="cl3oh9s8u000c14pgc3trxb6s" type="radio" name="rtoggle" value="Topo">
-                            <label for="cl3oh9s8u000c14pgc3trxb6s">Topo</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="Leyenda">
-                    <div id="SideBar">
-                        <div id="SideBarMenu">
-                            <h2>ÍNDICES ESPECTRALES ASTER</h2>
-                            <ul>
-                                <li>
-                                    <div id="lineamientos"></div>
-                                    <p class="Line">Lineamientos</p>
-                                </li>
-                                <li>
-                                    <button type="button" class="collapsible active">
-                                        <h3>ASTER VNIR (<span id="slider-value3">100%</span>)</h3>
-                                    </button>
-                                    <ul class="content_C">
-                                        <li>
-                                            <input id="slider3" type="range" min="0" max="100" step="0" value="100">
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color: #FF0000"></div>
-                                            <p class="fila">Ferrico +</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#6F0000"></div>
-                                            <p class="fila">Ferrico -</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color: #00FF00"></div>
-                                            <p class="fila">Ferroso +</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#008400"></div>
-                                            <p class="fila">Ferroso -</p>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <button type="button" class="collapsible active">
-                                        <h3>ASTER SWIR(<span id="slider-value2">100%</span>)</h3>
-                                    </button>
-                                    <ul class="content_C">
-                                        <li>
-                                            <input id="slider2" type="range" min="0" max="100" step="0" value="100">
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color: #27AE60"></div>
-                                            <p class="fila">Propilítico</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#7B241C"></div>
-                                            <p class="fila">Jarosita</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#BF40BF"></div>
-                                            <p class="fila">Carbonatos</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#FF7F50"></div>
-                                            <p class="fila">Argílica/Fílica</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#FFC000"></div>
-                                            <p class="fila">Argílica Avanzada</p>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <button type="button" class="collapsible active">
-                                        <h3>ASTER TIR (<span id="slider-value">100%</span>)</h3>
-                                    </button>
-                                    <ul class="content_C">
-                                        <li>
-                                            <input id="slider" type="range" min="0" max="100" step="0" value="100">
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#FF00FF"></div>
-                                            <p class="fila">Carbonato +</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#800080"></div>
-                                            <p class="fila">Carbonato -</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#1F51FF"></div>
-                                            <p class="fila">Cuarzo +</p>
-                                        </li>
-                                        <li>
-                                            <div class="cuadrado" style="background-color:#00008B"></div>
-                                            <p class="fila">Cuarzo -</p>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                        <div id="SideBarText" onclick="SideBar_ShowHide();">LEYENDA</div>
-                    </div>
-                </div>
-            </div>
-            <div class="Panel_Info">
-                <div id="features">
-                    <p id="pd">Índice espectral:</p>
-                </div>
-            </div>
-            <div class="Volar">
-                <div id="main"></div>
-            </div>
-        </div>
-        <div class="Cargar_Arch">
-            <div class="box">
-                <div class="hid-box">
-                    <div id="icon_imp">
-                        <i class="material-icons" style="float:right;font-size:20px">file_upload</i>Cargar archivo</div>
-                    <input type="file" id="file_input" accept=".kml"/>
-                    <p id="Intruc_load">Formato compatible: kml</p>
-                </div>
-            </div>
-        </div>
-        <div class="blank">
-            <div id="circle"></div>
-        </div>
-        <div class="blank2">
+				<!-- Exportar mapa -->
+				<a id="downloadLink" href="" download="map.png">Download ↓</a>
+				<div id="image"></div>
+				<!-- Contenido -->
+				<div class="Grilla">
+					<div class="Instrucciones">
+						<a id="btn_Tuto" href="">!</a>
+						<div>
+							<h2>Controles</h2>
+							<p>
+								Click izquierdo para desplazar el mapa, rueda para zoom y click
+								derecho para vista 3D.
+							</p>
+						</div>
+					</div>
+					<div class="MapaBase">
+						<div class="Calc_area">
+							<div id="polygon_info">i</div>
+							<div id="calculated-area">
+								<p>
+									Dibuja un polígono para calcular su área.<br /><br />Borrar
+									polígono
+								</p>
+							</div>
+						</div>
+						<div class="C_MapaBase">
+							<!-- Cambio Mapa Base -->
+							<div id="menu">
+								<input
+									id="cl3ln6foa004b15l783jfr7cx"
+									type="radio"
+									name="rtoggle"
+									value="SRGIS"
+									checked="checked"
+								/>
+								<label for="cl3ln6foa004b15l783jfr7cx">SRGIS</label>
+								<input
+									id="cl3ln5mx0000f15s69t8vyrkh"
+									type="radio"
+									name="rtoggle"
+									value="Satelite"
+								/>
+								<label for="cl3ln5mx0000f15s69t8vyrkh">Satélite</label>
+								<input
+									id="cl3oh9s8u000c14pgc3trxb6s"
+									type="radio"
+									name="rtoggle"
+									value="Topo"
+								/>
+								<label for="cl3oh9s8u000c14pgc3trxb6s">Topo</label>
+							</div>
+						</div>
+					</div>
+					<div class="Leyenda">
+						<div id="SideBar">
+							<div id="SideBarMenu">
+								<h2>ÍNDICES ESPECTRALES ASTER</h2>
+								<ul>
+									<li>
+										<div id="lineamientos"></div>
+										<p class="Line">Lineamientos</p>
+									</li>
+									<li>
+										<button type="button" class="collapsible active">
+											<h3>ASTER VNIR (<span id="slider-value3">100%</span>)</h3>
+										</button>
+										<ul class="content_C">
+											<li>
+												<input
+													id="slider3"
+													type="range"
+													min="0"
+													max="100"
+													step="0"
+													value="100"
+												/>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #ff0000"
+												></div>
+												<p class="fila">Ferrico +</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #6f0000"
+												></div>
+												<p class="fila">Ferrico -</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #00ff00"
+												></div>
+												<p class="fila">Ferroso +</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #008400"
+												></div>
+												<p class="fila">Ferroso -</p>
+											</li>
+										</ul>
+									</li>
+									<li>
+										<button type="button" class="collapsible active">
+											<h3>ASTER SWIR(<span id="slider-value2">100%</span>)</h3>
+										</button>
+										<ul class="content_C">
+											<li>
+												<input
+													id="slider2"
+													type="range"
+													min="0"
+													max="100"
+													step="0"
+													value="100"
+												/>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #27ae60"
+												></div>
+												<p class="fila">Propilítico</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #7b241c"
+												></div>
+												<p class="fila">Jarosita</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #bf40bf"
+												></div>
+												<p class="fila">Carbonatos</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #ff7f50"
+												></div>
+												<p class="fila">Argílica/Fílica</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #ffc000"
+												></div>
+												<p class="fila">Argílica Avanzada</p>
+											</li>
+										</ul>
+									</li>
+									<li>
+										<button type="button" class="collapsible active">
+											<h3>ASTER TIR (<span id="slider-value">100%</span>)</h3>
+										</button>
+										<ul class="content_C">
+											<li>
+												<input
+													id="slider"
+													type="range"
+													min="0"
+													max="100"
+													step="0"
+													value="100"
+												/>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #ff00ff"
+												></div>
+												<p class="fila">Carbonato +</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #800080"
+												></div>
+												<p class="fila">Carbonato -</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #1f51ff"
+												></div>
+												<p class="fila">Cuarzo +</p>
+											</li>
+											<li>
+												<div
+													class="cuadrado"
+													style="background-color: #00008b"
+												></div>
+												<p class="fila">Cuarzo -</p>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+							<div id="SideBarText" onclick="SideBar_ShowHide();">LEYENDA</div>
+						</div>
+					</div>
+				</div>
+				<div class="Panel_Info">
+					<div id="features">
+						<p id="pd">Índice espectral:</p>
+					</div>
+				</div>
+				<div class="Volar">
+					<div id="main"></div>
+				</div>
+			</div>
+			<div class="Cargar_Arch">
+				<div class="box">
+					<div class="hid-box">
+						<div id="icon_imp">
+							<i class="material-icons" style="float: right; font-size: 20px"
+								>file_upload</i
+							>Cargar archivo
+						</div>
+						<input type="file" id="file_input" accept=".kml" />
+						<p id="Intruc_load">Formato compatible: kml</p>
+					</div>
+				</div>
+			</div>
+			<div class="blank">
+				<div id="circle"></div>
+			</div>
+			<div class="blank2">
+				<div
+					id="sidebar"
+					class="absolute top-ml bottom right z1 w-full w300-ml px12 py12-ml events-none"
+				>
+					<div
+						class="flex-parent flex-parent--column viewport-half h-auto-ml hmax-full bg-white round-ml shadow-darken10 events-all"
+					>
+						<div class="px12 py12">
+							<h3 class="txt-bold">
+								<span id="sidebar-title"></span>
+								<button id="resetButton" class="btn btn--s fr">Reset</button>
+							</h3>
+							<p id="sidebar-description" class="none block-mm py6"></p>
+							<div id="chart"></div>
+						</div>
+					</div>
+				</div>
+				<div class="blank3"></div>
+			</div>
+		</main>
 
-            <div
-                id="sidebar"
-                class="absolute top-ml bottom right z1 w-full w300-ml px12 py12-ml events-none">
-                <div
-                    class="flex-parent flex-parent--column viewport-half h-auto-ml hmax-full bg-white round-ml shadow-darken10 events-all">
-                    <div class="px12 py12">
-                        <h3 class="txt-bold">
-                            <span id="sidebar-title"></span>
-                            <button id="resetButton" class="btn btn--s fr">Reset</button>
-                        </h3>
-                        <p id="sidebar-description" class="none block-mm py6"></p>
-                        <div id="chart"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="blank3"></div>
-        </div>
-    </main>
+		<!--Importar poligono-->
+		<script>
+			"use strict";
+			////////Llamado mapa base/////////
+			mapboxgl.accessToken =
+				"pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYV" +
+				"tfVOkahg";
+			const map = new mapboxgl.Map({
+				container: "map", // container ID
+				style: "mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true", // style URL
+				center: [-71, -34], // starting position [lng, lat]
+				zoom: 10, // starting zoom
+				preserveDrawingBuffer: true,
+				preventDefault: false,
+			});
+			////////Barra busqueda////////
+			map.addControl(
+				new MapboxGeocoder({
+					accessToken: mapboxgl.accessToken,
+					mapboxgl: mapboxgl,
+				})
+			);
+			///////control de zoom///////
+			var nav = new mapboxgl.NavigationControl({
+				showCompass: true,
+				showZoom: true,
+			});
+			map.addControl(nav, "top-right");
+			///////Cambio de mapa base///////
+			var layerList = document.getElementById("menu");
+			var inputs = layerList.getElementsByTagName("input");
 
-    <!--Importar poligono-->
-    <script>
-        'use strict';
-        ////////Llamado mapa base/////////
-        mapboxgl.accessToken = 'pk.eyJ1Ijoic3JnaXMiLCJhIjoiY2wzbHExNmF6MDhiYTNlbXltanJtbG1ldSJ9.RFNezhLR7Z9BYV' +
-                'tfVOkahg';
-        const map = new mapboxgl.Map({
-            container: 'map', // container ID
-            style: 'mapbox://styles/srgis/cl3ln6foa004b15l783jfr7cx?optimize=true', // style URL
-            center: [
-                -71, -34
-            ], // starting position [lng, lat]
-            zoom: 10, // starting zoom
-            preserveDrawingBuffer: true,
-            preventDefault: false
-        });
-        ////////Barra busqueda////////
-        map.addControl(
-            new MapboxGeocoder({accessToken: mapboxgl.accessToken, mapboxgl: mapboxgl})
-        );
-        ///////control de zoom///////
-        var nav = new mapboxgl.NavigationControl({showCompass: true, showZoom: true});
-        map.addControl(nav, "top-right");
-        ///////Cambio de mapa base///////
-        var layerList = document.getElementById('menu');
-        var inputs = layerList.getElementsByTagName('input');
+			/////////dibujar poligono////////
+			const draw = new MapboxDraw({
+				displayControlsDefault: false, //determina si se muestran controles
+				controls: {
+					polygon: true,
+					trash: true,
+				},
+				defaultMode: "simple_select", //draw_polygon para iniciar dibujado
+			});
+			map.addControl(draw, "top-left");
+			map.on("draw.create", updateArea);
+			map.on("draw.delete", updateArea);
+			map.on("draw.update", updateArea);
+			function updateArea(e) {
+				const data = draw.getAll();
+				const answer = document.getElementById("calculated-area");
+				if (data.features.length > 0) {
+					const area = turf.area(data);
+					const rounded_area = Math.round(area / 10000) / 100; // Restrict the area to 2 decimal points.
+					answer.innerHTML = `<p><strong>${rounded_area}</strong> Km<sup>2</sup><br><br>⇽Borrar polígono.</p>`;
+				} else {
+					answer.innerHTML =
+						"Dibuja un polígono para calcular su área.<br>⇽Borrar polígono.</br>";
+					if (e.type !== "draw.delete") alert("Has click para dibujar.");
+				}
+			}
+			/////////ESCALA/////////
+			map.addControl(new mapboxgl.ScaleControl({ position: "bottom-right" }));
+			/////////CAPAS//////// Variables y funciones relacionadas con el gráfico
 
-        /////////dibujar poligono////////
-        const draw = new MapboxDraw({
-            displayControlsDefault: false, //determina si se muestran controles
-            controls: {
-                polygon: true,
-                trash: true
-            },
-            defaultMode: 'simple_select' //draw_polygon para iniciar dibujado
-        });
-        map.addControl(draw, 'top-left');
-        map.on('draw.create', updateArea);
-        map.on('draw.delete', updateArea);
-        map.on('draw.update', updateArea);
-        function updateArea(e) {
-            const data = draw.getAll();
-            const answer = document.getElementById('calculated-area');
-            if (data.features.length > 0) {
-                const area = turf.area(data);
-                const rounded_area = Math.round(area / 10000) / 100; // Restrict the area to 2 decimal points.
-                answer.innerHTML = `<p><strong>${rounded_area}</strong> Km<sup>2</sup><br><br>⇽Borrar polígono.</p>`;
-            } else {
-                answer.innerHTML = 'Dibuja un polígono para calcular su área.<br>⇽Borrar polígono.</br>';
-                if (e.type !== 'draw.delete') 
-                    alert('Has click para dibujar.');
-                }
-            }
-        /////////ESCALA/////////
-        map.addControl(new mapboxgl.ScaleControl({position: 'bottom-right'}));
-        /////////CAPAS//////// Variables y funciones relacionadas con el gráfico
-        const graficoContainer = document.getElementById("grafico-container");
-        const cerrarGrafico = document.getElementById("cerrar-grafico");
-        const graficoElement = document.getElementById("grafico");
-        const etiquetas = document.getElementById("etiquetas");
+			function addSource() {
+				map.addSource("puntos", {
+					type: "vector",
+					url: "mapbox://srgis.4mbo7wer",
+				});
 
-        const colores = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"];
-        let graficosActivos = 0;
-        let grafico;
-        let puntosActivos = new Map();
+				// Configurar estilo de la capa de puntos.
+				map.addLayer({
+					id: "puntos",
+					type: "circle",
+					source: "puntos",
+					"source-layer": "ps-6o86wq",
+					paint: {
+						// Aumentar el tamaño de los círculos a medida que el usuario se acerca.
+						"circle-radius": {
+							property: "Promedio",
+							stops: [
+								[-24, 2],
+								[-12, 2.2],
+								[0, 2.4],
+								[4, 2.6],
+								[8, 2.8],
+								[17, 3],
+							],
+						},
+						// Colorear los círculos según el valor de "Promedio" con un gradiente de color
+						// que va desde el azul al rojo.
+						"circle-color": {
+							property: "Promedio",
+							stops: [
+								[-24, "#3182bd"],
+								[-12, "#6baed6"],
+								[0, "#9ecae1"],
+								[4, "#e6550d"],
+								[8, "#fd8d3c"],
+								[17, "#fdae6b"],
+							],
+						},
+					},
+				
+				});
+				map.on('click', 'puntos', function (e) {
+					var features = map.queryRenderedFeatures(e.point, { layers: ['puntos'] });
+					if (features.length) {
+						var data = features[0].properties;
+						var chart = createChart(data);
+						if (chart) {
+							var popup = new mapboxgl.Popup(
+								{ closeOnClick: false, anchor: 'bottom', interactive: true, maxWidth: '1000px', maxHeight: '400px' })
+								.setLngLat(e.lngLat)
+								.setDOMContent(chart)
+								.addTo(map);
+				
+							// Permite arrastrar el popup
+							popup._container.classList.add('mapboxgl-popup-draggable');
+							var popupDraggable = new Draggable(popup._container, { handle: '.mapboxgl-popup-tip', });
+						}
+					}
+				});
+				
+				function createChart(data) {
+					// Obtener las etiquetas del eje X de las columnas
+					var labels = Object.keys(data).filter(function (key) {
+						return key !== 'Promedio';
+					});
+				
+					// Obtener los valores del eje Y de las columnas
+					var values = labels.map(function (label) {
+						return data[label];
+					});
+				
+					// Crear el contenedor del gráfico
+					var chartContainer = document.createElement('div');
+					chartContainer.style.width = '100%'; // Ajustar el ancho del contenedor del gráfico en píxeles
+					chartContainer.style.height = '100%'; // Ajustar el alto del contenedor del gráfico en píxeles
+					var chartCanvas = document.createElement('canvas');
+					chartCanvas.width = (window.innerWidth * 0.7); // Ajustar el ancho del canvas del gráfico en función del ancho de la pantalla
+					chartCanvas.height = (window.innerHeight * 0.5); // Ajustar el alto del canvas del gráfico en función del alto de la pantalla
+					chartContainer.appendChild(chartCanvas);
+				
+					// Crear el gráfico
+					var chart = new Chart(chartCanvas, {
+						type: 'line',
+						data: {
+							labels: labels,
+							datasets: [
+								{
+									label: 'Desplazamiento',
+									data: values,
+									backgroundColor: 'rgba(204,102,0,0.2)',
+									borderColor: 'rgba(204,102,0,1)',
+									borderWidth: 1
+								}
+							]
+						},
+						options: {
+							plugins: {
+								legend: {
+									display: true // Ocultar la leyenda del gráfico
+								}
+							},
+							scales: {
+								y: {
+									scaleLabel: {
+										display: true,
+										labelString: 'Desplazamiento (m)'
+									},
+									ticks: {
+										beginAtZero: true,
+										suggestedMin: 10,
+										stepSize: 4,
+										callback: function (value, index, values) {
+											return value/* + 'm'*/;
+										}
+									},
+									grid: {
+										drawBorder: false
+									},
+									height: 300 // Ajustar el alto del eje y en píxeles
+								},
+								x: {
+									scaleLabel: {
+										display: false,
+										labelString: 'Fecha'
+									},
+									ticks: {
+										autoSkip: true,
+										stepSize: 20
+									},
+									grid: {
+										drawBorder: false
+									},
+									width: 500 // Ajustar el ancho del eje x en píxeles
+								}
+							}
+						}
+					});
+					
+									return chartContainer;
+									}
+				
 
-        function mostrarGrafico() {
-            graficoContainer
-                .classList
-                .remove("hidden");
-        }
+				////////Cambio mapa base////////
+				var kmlSourceName = "polygon";
+				var kmlLayerName = "polygon";
 
-        function ocultarGrafico() {
-            graficoContainer
-                .classList
-                .add("hidden");
-        }
+				function addKMLLayer(map, kml) {
+					var features = toGeoJSON.kml(
+						new DOMParser().parseFromString(kml, "text/xml")
+					).features;
+					var polygon = features.find(function (feature) {
+						return feature.geometry.type === "Polygon";
+					});
 
-        function crearGrafico() {
-            const ctx = graficoElement.getContext("2d");
-            grafico = new Chart(ctx, {
-                type: "line",
-                data: {
-                    datasets: []
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: "time"
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            mode: "index",
-                            intersect: false
-                        }
-                    }
-                }
-            });
-        }
+					addPolygonToMap(map, polygon, kmlSourceName, kmlLayerName); // añadir a mapa principal
+				}
 
-        function agregarGrafico(data) {
-            if (graficosActivos >= 5) {
-                alert("Máximo 5 puntos por gráfico. Elimina alguno para poder agregar más.");
-                return;
-            }
+				function switchLayer(layer) {
+					var layerId = layer.target.id;
+					// Remove KML layer and source
+					if (map.getLayer(kmlLayerName)) {
+						map.removeLayer(kmlLayerName);
+					}
+					if (map.getSource(kmlSourceName)) {
+						map.removeSource(kmlSourceName);
+					}
+					map.setStyle("mapbox://styles/srgis/" + layerId);
+					// Re-add KML layer and source
+					map.on("style.load", function () {
+						addSource();
+						addLayer();
+						if (kmlLayerName === "polygon") {
+							handleFileSelect(); // Volver a agregar el archivo KML al mapa
+						}
+					});
+				}
 
-            const id = "punto-" + graficosActivos;
-            const etiqueta = document.createElement("div");
-            etiqueta
-                .classList
-                .add("etiqueta");
-            etiqueta.textContent = "Gráfico " + (
-                graficosActivos + 1
-            );
-            etiqueta.style.backgroundColor = colores[graficosActivos % colores.length];
-            etiquetas.appendChild(etiqueta);
+				for (var i = 0; i < inputs.length; i++) {
+					inputs[i].onclick = switchLayer;
+				}
 
-            const datasetLineal = {
-                label: etiqueta.textContent,
-                data: data,
-                borderColor: colores[graficosActivos % colores.length],
-                backgroundColor: "transparent",
-                borderWidth: 2,
-                fill: false
-            };
+				// Función que maneja la selección del archivo KML
+				var kmlInput = document.getElementById("file_input");
+				kmlInput.addEventListener("change", handleFileSelect);
 
-            grafico
-                .data
-                .datasets
-                .push(datasetLineal);
-            grafico.update();
+				function handleFileSelect(event) {
+					var file = event.target.files[0];
+					var reader = new FileReader();
+					reader.addEventListener("load", function (e) {
+						// Eliminar la capa anterior si existe en el mapa principal
+						if (map.getLayer(kmlLayerName)) {
+							map.removeLayer(kmlLayerName);
+							map.removeSource(kmlSourceName);
+						}
+						var kml = e.target.result;
+						addKMLLayer(map, kml); // Añadir capa KML al mapa
+					});
+					reader.readAsText(file);
+				} //Fin función principal
+				map.on("click", "puntos", alternarGrafico);
 
-            puntosActivos.set(id, [datasetLineal]);
-            graficosActivos++;
-        }
-        function alternarGrafico(e) {
-            console.log("Click event triggered"); // Agrega esta línea
-            const punto = e.features[0].properties;
-          
-            const puntoArray = Object.entries(punto).map(([key, value]) => {
-              if (key !== "Promedio" && !isNaN(Date.parse(key)) && !isNaN(value)) {
-                const dateParts = key.split("-");
-                const formattedDate = `20${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
-                return {
-                  x: formattedDate,
-                  y: value
-                };
-              }
-              return null;
-            }).filter(entry => entry !== null);
-          
-            console.log("Processed data:", puntoArray); // Agrega esta línea
-            agregarGrafico(puntoArray);
-          }
-          
-        function addSource() {
-            map.addSource('puntos', {
-                type: 'vector',
-                url: 'mapbox://srgis.4mbo7wer'
-            });
+				cerrarGrafico.addEventListener("click", () => {
+					ocultarGrafico();
+					puntosActivos.forEach((_, id) => {
+						eliminarGrafico(id);
+					});
+				});
 
-            // Configurar estilo de la capa de puntos.
-            map.addLayer({
-                'id': 'puntos',
-                'type': 'circle',
-                'source': 'puntos',
-                'source-layer': 'ps-6o86wq',
-                'paint': {
-                    // Aumentar el tamaño de los círculos a medida que el usuario se acerca.
-                    'circle-radius': {
-                        'property': 'Promedio',
-                        'stops': [
-                            [
-                                -24, 2
-                            ],
-                            [
-                                -12, 2.2
-                            ],
-                            [
-                                0, 2.4
-                            ],
-                            [
-                                4, 2.6
-                            ],
-                            [
-                                8, 2.8
-                            ],
-                            [
-                                17, 3
-                            ]
-                        ]
-                    },
-                    // Colorear los círculos según el valor de "Promedio" con un gradiente de color
-                    // que va desde el azul al rojo.
-                    'circle-color': {
-                        'property': 'Promedio',
-                        'stops': [
-                            [
-                                -24, '#3182bd'
-                            ],
-                            [
-                                -12, '#6baed6'
-                            ],
-                            [
-                                0, '#9ecae1'
-                            ],
-                            [
-                                4, '#e6550d'
-                            ],
-                            [
-                                8, '#fd8d3c'
-                            ],
-                            [
-                                17, '#fdae6b'
-                            ]
-                        ]
-                    }
-                }
-            });
+				function eliminarGrafico(id) {
+					const datasets = puntosActivos.get(id);
+					if (datasets) {
+						datasets.forEach((dataset) => {
+							const index = grafico.data.datasets.indexOf(dataset);
+							if (index > -1) {
+								grafico.data.datasets.splice(index, 1);
+							}
+						});
+						puntosActivos.delete(id);
+						grafico.update();
+						graficosActivos--;
 
-                  
-                   ////////Cambio mapa base////////
-        var kmlSourceName = 'polygon';
-        var kmlLayerName = 'polygon';
+						if (graficosActivos === 0) {
+							ocultarGrafico();
+						}
+					}
+				}
 
-        function addKMLLayer(map, kml) {
-            var features = toGeoJSON
-                .kml(
-                    (new DOMParser()).parseFromString(kml, 'text/xml')
-                )
-                .features;
-            var polygon = features.find(function (feature) {
-                return feature.geometry.type === 'Polygon';
-            });
+				// Espera a que la capa de puntos se cargue antes de agregar eventos
+				map.on("idle", function () {
+					if (map.getLayer("puntos")) {
+						// Agrega eventos para la capa de puntos
+						map.on("mouseenter", "puntos", () => {
+							map.getCanvas().style.cursor = "pointer";
+						});
 
-            addPolygonToMap(map, polygon, kmlSourceName, kmlLayerName); // añadir a mapa principal
-        }
+						map.on("mouseleave", "puntos", () => {
+							map.getCanvas().style.cursor = "";
+						});
 
-        function switchLayer(layer) {
-            var layerId = layer.target.id;
-            // Remove KML layer and source
-            if (map.getLayer(kmlLayerName)) {
-                map.removeLayer(kmlLayerName);
-            }
-            if (map.getSource(kmlSourceName)) {
-                map.removeSource(kmlSourceName);
-            }
-            map.setStyle('mapbox://styles/srgis/' + layerId);
-            // Re-add KML layer and source
-            map.on('style.load', function () {
-                addSource();
-                addLayer();
-                if (kmlLayerName === 'polygon') {
-                    handleFileSelect(); // Volver a agregar el archivo KML al mapa
-                }
-            });
-        }
+						map.on("click", "puntos", (e) => {
+							alternarGrafico({ features: [e] });
+						});
+					}
+				});
+			}
 
-        for (var i = 0; i < inputs.length; i++) {
-            inputs[i].onclick = switchLayer;
-        }
+			map.on("style.load", function () {
+				addSource();
+				addLayer();
+			});
 
-        // Función que maneja la selección del archivo KML
-        var kmlInput = document.getElementById('file_input');
-        kmlInput.addEventListener('change', handleFileSelect);
+			///////SideBar////////
+			/* Show-hide the SideBar */
+			function SideBar_ShowHide() {
+				var _sb = document.getElementById("SideBar"); /* Get SideBar object */
+				var _width = "200px"; /* SideBar width */
 
-        function handleFileSelect(event) {
-            var file = event
-                .target
-                .files[0];
-            var reader = new FileReader();
-            reader.addEventListener('load', function (e) {
-                // Eliminar la capa anterior si existe en el mapa principal
-                if (map.getLayer(kmlLayerName)) {
-                    map.removeLayer(kmlLayerName);
-                    map.removeSource(kmlSourceName);
-                }
-                var kml = e.target.result;
-                addKMLLayer(map, kml); // Añadir capa KML al mapa
-            });
-            reader.readAsText(file);
+				if (_sb.style.width == _width) {
+					_sb.style.width = "0px"; /* Hide SideBar */
+					return;
+				}
+				_sb.style.width = _width; /* Show SideBar */
+			}
+			//collapsible
+			const collapsible = document.getElementsByClassName("collapsible");
+			for (let i = 0; i < collapsible.length; i++) {
+				collapsible[i].addEventListener("click", (e) =>
+					e.currentTarget.classList.toggle("active")
+				);
+			}
+			///////////////Imprimir mapa//////////////////
+			$(document).ready(function (e) {
+				$("#downloadLink").click(function () {
+					var mapCanvas = map.getCanvas();
+					var body = $("body"); // Obtener instancia del body
+					html2canvas(body, {
+						// Agregar al objeto html2canvas
+						allowTaint: true,
+						dpi: 190,
+						useCORS: true,
+						logging: true,
+						onrendered: function (interfaceCanvas) {
+							var mapCanvas = map.getCanvas(); // Obtener instancia del canvas del mapa
+							canvas.width = mapCanvas.width; // Ajustar ancho de la interfaz al ancho del mapa
+							canvas.height = mapCanvas.height; // Ajustar alto de la interfaz al alto del mapa
+							var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
+							var imgData = combinedCanvas.toDataURL("image/png", 1.0);
+							var link = document.createElement("a");
+							link.href = imgData;
+							link.download = "captura-pagina.png";
+							document.body.appendChild(link);
+							link.click();
+							document.body.removeChild(link);
+						},
+					});
+					return false;
+				});
+				function mergeCanvases(canvas1, canvas2) {
+					var combinedCanvas = document.createElement("canvas");
+					combinedCanvas.width = Math.max(canvas1.width, canvas2.width);
+					combinedCanvas.height = Math.max(canvas1.height, canvas2.height);
+					var ctx = combinedCanvas.getContext("2d");
+					ctx.drawImage(canvas1, 0, 0);
+					ctx.drawImage(canvas2, 0, 0);
+					return combinedCanvas;
+				}
+			});
+			///////Poligono importado///////
+			function addPolygonToMap(mapInstance, polygon) {
+				if (!polygon) {
+					return alert("El archivo KML no contiene un polígono válido.");
+				}
 
-        }; //Fin función principal
-        map.on("click", "puntos", alternarGrafico);
+				mapInstance.addSource("polygon", {
+					type: "geojson",
+					data: polygon,
+				});
 
-        cerrarGrafico.addEventListener("click", () => {
-            ocultarGrafico();
-            puntosActivos.forEach((_, id) => {
-                eliminarGrafico(id);
-            });
-        });
+				mapInstance.addLayer({
+					id: "polygon",
+					type: "fill",
+					source: "polygon",
+					paint: {
+						"fill-color": "#088",
+						"fill-opacity": 0.8,
+					},
+				});
 
-        function eliminarGrafico(id) {
-            const datasets = puntosActivos.get(id);
-            if (datasets) {
-                datasets.forEach((dataset) => {
-                    const index = grafico
-                        .data
-                        .datasets
-                        .indexOf(dataset);
-                    if (index > -1) {
-                        grafico
-                            .data
-                            .datasets
-                            .splice(index, 1);
-                    }
-                });
-                puntosActivos.delete(id);
-                grafico.update();
-                graficosActivos--;
+				// ajustar vista del mapa principal
+				if (polygon) {
+					map.fitBounds(turf.bbox(polygon), { padding: 20 });
+				}
+			}
 
-                if (graficosActivos === 0) {
-                    ocultarGrafico();
-                }
-            }
-        }
+			map.on("load", function () {
+				//KML IMPORTADO// Añadir un input para seleccionar el archivo KML
+				var kmlData;
+				var input = document.getElementById("file_input");
+				input.addEventListener("change", handleFileSelect);
+				// llama a handleFileSelect después de que el mapa cargue
 
-        // Espera a que la capa de puntos se cargue antes de agregar eventos
-        map.on('idle', function () {
-            if (map.getLayer('puntos')) {
-                // Agrega eventos para la capa de puntos
-                map.on("mouseenter", "puntos", () => {
-                    map
-                        .getCanvas()
-                        .style
-                        .cursor = "pointer";
-                });
-
-                map.on("mouseleave", "puntos", () => {
-                    map
-                        .getCanvas()
-                        .style
-                        .cursor = "";
-                });
-
-                map.on("click", "puntos", (e) => {
-                    alternarGrafico({features: [e]});
-                });
-            }
-        });
-
-    }
-
-
-        map.on('style.load', function () {
-            addSource();
-            addLayer();
-
-        });
-
-        ///////SideBar////////
-        /* Show-hide the SideBar */
-        function SideBar_ShowHide() {
-            var _sb = document.getElementById("SideBar");/* Get SideBar object */
-            var _width = '200px';/* SideBar width */
-
-            if (_sb.style.width == _width) {
-                _sb.style.width = '0px';/* Hide SideBar */
-                return;
-            }
-            _sb.style.width = _width;/* Show SideBar */
-        };
-        //collapsible
-        const collapsible = document.getElementsByClassName("collapsible");
-        for (let i = 0; i < collapsible.length; i++) {
-            collapsible[i].addEventListener(
-                "click",
-                e => e.currentTarget.classList.toggle("active")
-            );
-        }
-        ///////////////Imprimir mapa//////////////////
-        $(document).ready(function (e) {
-            $('#downloadLink').click(function () {
-                var mapCanvas = map.getCanvas();
-                var body = $('body'); // Obtener instancia del body
-                html2canvas(body, { // Agregar al objeto html2canvas
-                    allowTaint: true,
-                    dpi: 190,
-                    useCORS: true,
-                    logging: true,
-                    onrendered: function (interfaceCanvas) {
-                        var mapCanvas = map.getCanvas(); // Obtener instancia del canvas del mapa
-                        canvas.width = mapCanvas.width; // Ajustar ancho de la interfaz al ancho del mapa
-                        canvas.height = mapCanvas.height; // Ajustar alto de la interfaz al alto del mapa
-                        var combinedCanvas = mergeCanvases(mapCanvas, interfaceCanvas);
-                        var imgData = combinedCanvas.toDataURL('image/png', 1.0);
-                        var link = document.createElement('a');
-                        link.href = imgData;
-                        link.download = "captura-pagina.png";
-                        document
-                            .body
-                            .appendChild(link);
-                        link.click();
-                        document
-                            .body
-                            .removeChild(link);
-                    }
-                });
-                return false;
-            });
-            function mergeCanvases(canvas1, canvas2) {
-                var combinedCanvas = document.createElement('canvas');
-                combinedCanvas.width = Math.max(canvas1.width, canvas2.width);
-                combinedCanvas.height = Math.max(canvas1.height, canvas2.height);
-                var ctx = combinedCanvas.getContext('2d');
-                ctx.drawImage(canvas1, 0, 0);
-                ctx.drawImage(canvas2, 0, 0);
-                return combinedCanvas;
-            }
-        });
-        ///////Poligono importado///////
-        function addPolygonToMap(mapInstance, polygon) {
-            if (!polygon) {
-                return alert('El archivo KML no contiene un polígono válido.');
-            }
-
-            mapInstance.addSource('polygon', {
-                type: 'geojson',
-                data: polygon
-            });
-
-            mapInstance.addLayer({
-                id: 'polygon',
-                type: 'fill',
-                source: 'polygon',
-                paint: {
-                    'fill-color': '#088',
-                    'fill-opacity': 0.8
-                }
-            });
-
-            // ajustar vista del mapa principal
-            if (polygon) {
-                map.fitBounds(turf.bbox(polygon), {padding: 20});
-            }
-        }
-
-        map.on('load', function () {
-            //KML IMPORTADO// Añadir un input para seleccionar el archivo KML
-            var kmlData;
-            var input = document.getElementById('file_input');
-            input.addEventListener('change', handleFileSelect);
-            // llama a handleFileSelect después de que el mapa cargue
-
-            handleFileSelect(document.getElementById('file-input').files[0]);
-
-        });
-    </script>
-</body>
+				handleFileSelect(document.getElementById("file-input").files[0]);
+			});
+		</script>
+	</body>
 </html>
