@@ -33,14 +33,8 @@
 		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 		<!--Gráfico-->
-		<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
-		<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
-		<script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
-		<script src="https://unpkg.com/regression@2.0.1/regression.min.js"></script>
-		<script src="https://cdn.anychart.com/js/8.10.0/anychart-base.min.js"></script> <script src="https://cdn.anychart.com/js/8.10.0/anychart-ui.min.js"></script> <script src="https://cdn.anychart.com/js/8.10.0/anychart-exports.min.js"></script>
-
-		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+		<link href='https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.css' rel='stylesheet' />
 
 		<!--Canva to html-->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -394,146 +388,210 @@
 			/////////CAPAS//////// Variables y funciones relacionadas con el gráfico
 
 			function addSource() {
-				map.addSource("puntos", {
-					type: "vector",
-					url: "mapbox://srgis.4mbo7wer",
+			// Variables para el estilo de los puntos
+			var circleRadius = {
+				property: 'Promedio',
+				stops: [
+				  [-24, 2],
+				  [-12, 2.2],
+				  [0, 2.4],
+				  [4, 2.6],
+				  [8, 2.8],
+				  [17, 3]
+				]
+			  };
+			  
+			  var circleColor = {
+				property: 'Promedio',
+				stops: [
+				  [-24, '#3182bd'],
+				  [-12, '#6baed6'],
+				  [0, '#9ecae1'],
+				  [4, '#e6550d'],
+				  [8, '#fd8d3c'],
+				  [17, '#fdae6b']
+				]
+			  };
+			  
+			  // Agregar la fuente de datos y la capa de puntos
+			  map.on('load', function() {
+				map.addSource('puntos', {
+				  type: 'vector',
+				  url: 'mapbox://srgis.4mbo7wer',
 				});
-
-				// Configurar estilo de la capa de puntos.
+			  
+				// Configurar estilo de la capa de puntos
 				map.addLayer({
-					id: "puntos",
-					type: "circle",
-					source: "puntos",
-					"source-layer": "ps-6o86wq",
-					paint: {
-						// Aumentar el tamaño de los círculos a medida que el usuario se acerca.
-						"circle-radius": {
-							property: "Promedio",
-							stops: [
-								[-24, 2],
-								[-12, 2.2],
-								[0, 2.4],
-								[4, 2.6],
-								[8, 2.8],
-								[17, 3],
-							],
-						},
-						// Colorear los círculos según el valor de "Promedio" con un gradiente de color
-						// que va desde el azul al rojo.
-						"circle-color": {
-							property: "Promedio",
-							stops: [
-								[-24, "#3182bd"],
-								[-12, "#6baed6"],
-								[0, "#9ecae1"],
-								[4, "#e6550d"],
-								[8, "#fd8d3c"],
-								[17, "#fdae6b"],
-							],
-						},
-					},
-				
+				  id: 'puntos',
+				  type: 'circle',
+				  source: 'puntos',
+				  'source-layer': 'ps-6o86wq',
+				  paint: {
+					// Aumentar el tamaño de los círculos a medida que el usuario se acerca
+					'circle-radius': circleRadius,
+			  
+					// Colorear los círculos según el valor de "Promedio" con un gradiente de color que va desde el azul al rojo
+					'circle-color': circleColor
+				  }
 				});
-				map.on('click', 'puntos', function (e) {
-					var features = map.queryRenderedFeatures(e.point, { layers: ['puntos'] });
-					if (features.length) {
-						var data = features[0].properties;
-						var chart = createChart(data);
-						if (chart) {
-							var popup = new mapboxgl.Popup(
-								{ closeOnClick: false, anchor: 'bottom', interactive: true, maxWidth: '1000px', maxHeight: '400px' })
-								.setLngLat(e.lngLat)
-								.setDOMContent(chart)
-								.addTo(map);
-				
-							// Permite arrastrar el popup
-							popup._container.classList.add('mapboxgl-popup-draggable');
-							var popupDraggable = new Draggable(popup._container, { handle: '.mapboxgl-popup-tip', });
-						}
-					}
+			  
+				// Variables para el gráfico y el popup
+				var chart = null;
+				var popup = new mapboxgl.Popup({ 
+					closeButton: true, 
+					closeOnClick: false, 
+					anchor: 'bottom', 
+					maxWidth: '1000px', 
+					maxHeight: '400px' 
+				  });
+				var selectedPointId = null;
+			  
+				// Evento al pasar sobre un punto
+				map.on('mouseenter', 'puntos', function(e) {
+				  map.getCanvas().style.cursor = 'pointer';
 				});
-				
-				function createChart(data) {
-					// Obtener las etiquetas del eje X de las columnas
-					var labels = Object.keys(data).filter(function (key) {
-						return key !== 'Promedio';
+			  
+				// Evento al salir de un punto
+				map.on('mouseleave', 'puntos', function(e) {
+				  map.getCanvas().style.cursor = '';
+				});
+			  
+				// Evento al hacer click en un punto
+				map.on('click', 'puntos', function(e) {
+				  // Obtener las características del punto clickeado
+				  var features = map.queryRenderedFeatures(e.point, { layers: ['puntos'] });
+			  
+				  if (features.length) {
+					var data = features[0].properties;
+					var labels = Object.keys(data).filter(function(key) {
+					  return key !== 'Promedio';
 					});
-				
-					// Obtener los valores del eje Y de las columnas
-					var values = labels.map(function (label) {
-						return data[label];
+					var values = labels.map(function(label) {
+					  return data[label];
 					});
-				
-					// Crear el contenedor del gráfico
-					var chartContainer = document.createElement('div');
-					chartContainer.style.width = '100%'; // Ajustar el ancho del contenedor del gráfico en píxeles
-					chartContainer.style.height = '100%'; // Ajustar el alto del contenedor del gráfico en píxeles
-					var chartCanvas = document.createElement('canvas');
-					chartCanvas.width = (window.innerWidth * 0.7); // Ajustar el ancho del canvas del gráfico en función del ancho de la pantalla
-					chartCanvas.height = (window.innerHeight * 0.5); // Ajustar el alto del canvas del gráfico en función del alto de la pantalla
-					chartContainer.appendChild(chartCanvas);
-				
+			  
 					// Crear el gráfico
-					var chart = new Chart(chartCanvas, {
-						type: 'line',
-						data: {
-							labels: labels,
-							datasets: [
-								{
-									label: 'Desplazamiento',
-									data: values,
-									backgroundColor: 'rgba(204,102,0,0.2)',
-									borderColor: 'rgba(204,102,0,1)',
-									borderWidth: 1
-								}
-							]
-						},
-						options: {
-							plugins: {
-								legend: {
-									display: true // Ocultar la leyenda del gráfico
-								}
-							},
-							scales: {
-								y: {
-									scaleLabel: {
-										display: true,
-										labelString: 'Desplazamiento (m)'
-									},
-									ticks: {
-										beginAtZero: true,
-										suggestedMin: 10,
-										stepSize: 4,
-										callback: function (value, index, values) {
-											return value/* + 'm'*/;
-										}
-									},
-									grid: {
-										drawBorder: false
-									},
-									height: 300 // Ajustar el alto del eje y en píxeles
-								},
-								x: {
-									scaleLabel: {
-										display: false,
-										labelString: 'Fecha'
-									},
-									ticks: {
-										autoSkip: true,
-										stepSize: 20
-									},
-									grid: {
-										drawBorder: false
-									},
-									width: 500 // Ajustar el ancho del eje x en píxeles
-								}
-							}
-						}
-					});
-					
-									return chartContainer;
-									}
-				
+					if (chart) {
+					  chartcontainer.addEventListener("click", function (e) {
+						e.stopPropagation();
+						});
+						  // Crear botón de cerrar
+			  var closeButton = document.createElement("button");
+			  closeButton.classList.add("mapboxgl-popup-close-button");
+			  closeButton.innerHTML = "&times;";
+			  closeButton.addEventListener("click", function () {
+				popup.remove();
+				// Restaurar estilo del punto
+				map.setFeatureState(
+				  { source: "puntos", id: data.id },
+				  { clicked: false }
+				);
+			  });
+			
+			  // Añadir botón de cerrar al popup
+			  chartContainer.appendChild(closeButton);
+			
+			  // Permite arrastrar el popup
+			  popup._container.classList.add("mapboxgl-popup-draggable");
+			  var popupDraggable = new Draggable(popup._container, {
+				handle: ".mapboxgl-popup-content",
+			  });
+			}
+			
+			// Restaurar estilo del punto si el popup se cierra sin presionar el botón de cerrar
+			popup.on("close", function () {
+			  map.setFeatureState(
+				{ source: "puntos", id: data.id },
+				{ clicked: false }
+			  );
+			});
+			
+			// Activar estilo del punto cuando se presiona
+			map.setFeatureState(
+			  { source: "puntos", id: data.id },
+			  { clicked: true }
+			);
+			// Aumentar tamaño del punto
+			map.setPaintProperty("puntos", "circle-radius", [
+			  "interpolate",
+			  ["linear"],
+			  ["zoom"],
+			  0,
+			  [
+				"interpolate",
+				["linear"],
+				["get", "Promedio"],
+				-24,
+				2,
+				-12,
+				2.2,
+				0,
+				2.4,
+				4,
+				2.6,
+				8,
+				2.8,
+				17,
+				3,
+			  ],
+			  15,
+			  [
+				"interpolate",
+				["linear"],
+				["get", "Promedio"],
+				-24,
+				20,
+				-12,
+				22,
+				0,
+				24,
+				4,
+				26,
+				8,
+				28,
+				17,
+				30,
+			  ],
+			]);
+			
+			return chartContainer;
+			}
+			
+			// Añadir evento al pasar sobre un punto
+			map.on("mouseenter", "puntos", function () {
+			map.getCanvas().style.cursor = "pointer";
+			});
+			
+			// Añadir evento al salir de un punto
+			map.on("mouseleave", "puntos", function () {
+			map.getCanvas().style.cursor = "";
+			});
+			
+			// Añadir evento al hacer click en un punto
+			map.on("click", "puntos", function (e) {
+			var features = map.queryRenderedFeatures(e.point, { layers: ["puntos"] });
+			if (features.length) {
+			var data = features[0].properties;
+			var chart = createChart(data);
+			if (chart) {
+			// Cerrar popup si ya existe uno abierto
+			if (popup) {
+			popup.remove();
+			}
+			popup = new mapboxgl.Popup({
+			closeOnClick: false,
+			anchor: "bottom",
+			interactive: true,
+			maxWidth: "1000px",
+			maxHeight: "400px",
+			})
+			.setLngLat(e.lngLat)
+			.setDOMContent(chart)
+			.addTo(map);
+			}
+			}
+			});
+			});	
 
 				////////Cambio mapa base////////
 				var kmlSourceName = "polygon";
@@ -592,52 +650,8 @@
 					});
 					reader.readAsText(file);
 				} //Fin función principal
-				map.on("click", "puntos", alternarGrafico);
-
-				cerrarGrafico.addEventListener("click", () => {
-					ocultarGrafico();
-					puntosActivos.forEach((_, id) => {
-						eliminarGrafico(id);
-					});
-				});
-
-				function eliminarGrafico(id) {
-					const datasets = puntosActivos.get(id);
-					if (datasets) {
-						datasets.forEach((dataset) => {
-							const index = grafico.data.datasets.indexOf(dataset);
-							if (index > -1) {
-								grafico.data.datasets.splice(index, 1);
-							}
-						});
-						puntosActivos.delete(id);
-						grafico.update();
-						graficosActivos--;
-
-						if (graficosActivos === 0) {
-							ocultarGrafico();
-						}
-					}
-				}
-
-				// Espera a que la capa de puntos se cargue antes de agregar eventos
-				map.on("idle", function () {
-					if (map.getLayer("puntos")) {
-						// Agrega eventos para la capa de puntos
-						map.on("mouseenter", "puntos", () => {
-							map.getCanvas().style.cursor = "pointer";
-						});
-
-						map.on("mouseleave", "puntos", () => {
-							map.getCanvas().style.cursor = "";
-						});
-
-						map.on("click", "puntos", (e) => {
-							alternarGrafico({ features: [e] });
-						});
-					}
-				});
-			}
+				
+			};
 
 			map.on("style.load", function () {
 				addSource();
