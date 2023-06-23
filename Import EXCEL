@@ -1,0 +1,377 @@
+Sub ImportarArchivosModificado()
+    Dim Planilla1 As Workbook
+    Dim elapsedTime As Double
+    Dim startTime As Double
+    Dim providerRow As Long
+
+    ' Deshabilitar la actualización de pantalla, el cálculo automático y las alertas de eventos
+    With Application
+        .ScreenUpdating = False
+        .Calculation = xlCalculationManual
+        .EnableEvents = False
+        .AskToUpdateLinks = False
+    End With
+    
+    ' Guardar referencias a las planillas y hojas de trabajo
+    Dim wsParametros As Worksheet
+    Dim wsConsolidado As Worksheet
+    Set Planilla1 = ThisWorkbook
+    Set wsParametros = Planilla1.Worksheets("Parametros")
+    Set wsConsolidado = Planilla1.Worksheets("Consolidado")
+    
+    Dim categoryValue As Range
+    Dim sheetRow As Long
+    Dim sheetNames As Range
+    Dim filtroDesarrollador As Range
+    Dim lastRowCon As Long
+    Dim startCell As Range
+    Dim startCellCon As Range
+    Dim filtroProyecto As Range
+    Dim filaConsolidado As Long
+    
+    '////Parametros Constantes
+    Set startCell = wsParametros.Range("projectName") '////Constante
+    Set categoryValue = wsParametros.Range(startCell.Offset(0, 3), startCell.End(xlToRight)) '////Constante
+    'Debug.Print "El rango de categorias es: " & categoryValue.Address '////Debug Categorias
+    Set sheetNames = wsParametros.Range(startCell.Offset(1, 2), wsParametros.Cells(wsParametros.Rows.Count, startCell.Offset(1, 2).Column).End(xlUp)) '////Rango de busqueda de valores de nombre hoja / Constante
+    'Debug.Print "El rango de valores de nombres de hoja es: " & sheetNames.Address '////Debug Categorias
+    Set filtroDesarrollador = wsConsolidado.Range("Filtro_Proveedor") '////Celda columna Proveedores
+    Set filtroProyecto = wsConsolidado.Range("Filtro_Proyecto") '////Celda columna Proveedores
+    Set startCellCon = wsConsolidado.Range("Consolidado_Proyectos") '////Celda columna datos a pegar
+    filaConsolidado = startCellCon.Row '////Fila para categorias en Consolidado
+    'Debug.Print "La fila de categorias para Consolidados es: " & filaConsolidado '////Debug Categorias
+    lastRowCon = wsConsolidado.Cells(wsConsolidado.Rows.Count, filtroDesarrollador.Column).End(xlUp).Row '////Última fila en columna de valores para Consolidado
+    'Debug.Print "La fila final para filtrar de Consolidados es: " & lastRowCon '////Debug Categorias
+    
+    ' Iniciar el temporizador
+    startTime = Timer
+    
+    ' Crear y configurar el cuadro de diálogo Abrir archivo
+    Dim fd As fileDialog
+    Set fd = Application.fileDialog(msoFileDialogFilePicker)
+    With fd
+        .AllowMultiSelect = True
+        .Title = "Selecciona las planillas a importar"
+        .Filters.Clear
+        .Filters.Add "Archivos de Excel", "*.xls*"
+        
+        '////// Mostrar el cuadro de diálogo y procesar los archivos seleccionados
+        If .Show = -1 Then
+            Dim Archivo As Variant
+            '///////////Bucle Archivos
+            For Each Archivo In .SelectedItems
+                ' Abrir el archivo seleccionado
+                Dim openedWorkbook As Workbook
+                Set openedWorkbook = Workbooks.Open(Archivo, UpdateLinks:=False) 'Desactiva los links
+                
+                '///////////////Búsqueda por Proyecto
+                Dim foundInProjects As Boolean
+                Dim providerStart As Range
+                Dim providerCell As Range
+                Dim providerName As Variant
+                Dim providerRange As Range
+                
+                Set providerStart = startCell     '////Constante
+                Set providerRange = wsParametros.Range(providerStart.Offset(1, 0), wsParametros.Cells(wsParametros.Rows.Count, providerStart.Column).End(xlUp)) '////Constante Rango Proveedores
+                Debug.Print "El rango de proveedores es: " & providerRange.Address
+                For Each providerCell In providerRange
+                    If InStr(1, Archivo, providerCell.Value, vbTextCompare) > 0 Then 'InStr([start], string1, string2, [compare])
+                        ' Devolver el nombre del proveedor en la misma fila en la columna Proyectos
+                        providerRow = providerCell.Row '////Fila Maestra / Variable
+                        sheetRow = providerRow    '////Fila Proveedor / Variable
+                        Debug.Print "La fila de proveedor es: " & sheetRow '////Debug fila proveedor
+                        providerName = wsParametros.Cells(providerCell.Row, providerStart.Column).Value '////Valor de proveedor / Variable
+                        Debug.Print "El proveedor Proyecto es: " & providerName '////Debug nombre proveedor
+                        foundInProjects = True
+                        Exit For ' Salir del bucle For si se encontró una coincidencia
+                    End If
+                Next providerCell
+                
+                '///////////////Búsqueda por Proveedor
+                If providerName = "" Then         ' Sólo buscar en la columna Proveedores si no se encontró ninguna coincidencia en la columna Proyectos
+                    Set providerStart = startCell.Offset(0, 1) '////Constante modificada
+                    Set providerRange = wsParametros.Range(providerStart.Offset(1, 0), wsParametros.Cells(wsParametros.Rows.Count, providerStart.Offset(1, 0).Column).End(xlUp)) '////Constante Rango Proveedores
+                    Debug.Print "El rango de proveedores es: " & providerRange.Address
+                    For Each providerCell In providerRange
+                        If InStr(1, Archivo, providerCell.Value, vbTextCompare) > 0 Then
+                            ' Devolver el nombre del proveedor en la misma fila en la columna Proveedores
+                            providerRow = providerCell.Row '////Fila Proveedor / Variable
+                            Debug.Print "La fila de proveedor es: " & providerRow '////Debug fila proveedor
+                            providerName = wsParametros.Cells(providerCell.Row, providerStart.Column).Value
+                            Debug.Print "El proveedor Proyecto es: " & providerName '////Debug proveedor
+                            foundInProjects = False
+                            Exit For ' Salir del bucle For si se encontró una coincidencia
+                        End If
+                    Next providerCell
+                End If
+                '////Bucle apertura archivo
+                ' Verificar si el archivo se ha abierto correctamente
+                If Not openedWorkbook Is Nothing Then
+                    ' Asignar el archivo abierto a la variable Planilla2
+                    Dim Planilla2 As Workbook
+                    Set Planilla2 = openedWorkbook
+                    Debug.Print "El archivo se abrió correctamente: " & Planilla2.Name '////Debug apertura archivo
+                    
+                    '///////////////Bucle Búsqueda por hoja
+                    Dim targetSheet As Worksheet
+                    Dim foundSheet As Variant
+                    Dim foundSheetRange As Range
+                    
+                    'Dim providerFilter As String
+                    Dim searchRange As Range
+                    Dim lastColumn As Long
+                    If providerName <> "" Then    '////Si se encontró un proveedor, procesar el archivo
+                        For Each targetSheet In Planilla2.Worksheets
+                            '////Condicional para proveedor o proyecto
+                            If foundInProjects Then '////Si se encontró en proyectos
+                                foundSheet = wsParametros.Cells(sheetRow, startCell.Column + 2).Value '////Parametro búsqueda hoja / Variable
+                                If targetSheet.Name <> foundSheet Then
+                                    'MsgBox "No se encontró la hoja " & targetSheet.Name & " en la lista de proyectos para nombres de hoja.", vbExclamation, "Error en la hoja"
+                                'Else
+                                    Debug.Print "El valor de hoja de Proyecto es: " & foundSheet '////Debug para el valor de hoja buscado
+                                End If
+                                
+                            Else '////Si se encontró en Proveedor
+                                Set foundSheetRange = sheetNames.Find(targetSheet.Name, LookIn:=xlValues, LookAt:=xlWhole) '////Variable
+                                
+                                If foundSheetRange Is Nothing Then
+                                    MsgBox "No se encontró el nombre de hoja en la lista del Proveedor.", vbExclamation, "Error en la hoja"
+                                Else
+                                    If targetSheet.Name <> foundSheetRange.Value Then
+                                        'MsgBox "No se encontró la hoja " & targetSheet.Name & " en la lista de proyectos para nombres de hoja.", vbExclamation, "Error en la hoja"
+                                    Else
+                                        foundSheet = foundSheetRange.Value
+                                        Debug.Print "El valor de hoja de Proyecto es: " & foundSheet '////Debug para el valor de hoja buscado
+                                        sheetRow = foundSheetRange.Row
+                                        Debug.Print "la fila de proveedor es: " & sheetRow '////Debug para la fila de proveedor
+                                    End If
+                                    Debug.Print "El valor de hoja de Proveedor es: " & foundSheetRange.Value '////Debug para el valor de hoja buscado
+                                End If
+                            End If
+                            
+                            If Not targetSheet.Name <> foundSheet Then '////Si se encontró el nombre de la hoja
+                                Set searchRange = wsParametros.Range(startCell.Offset(sheetRow - startCell.Row, 3), wsParametros.Cells(sheetRow, startCell.Offset(0, 3).Column).End(xlToRight)) '////Obtener el rango de búsqueda / Variable
+                                Debug.Print "El rango de búsqueda es: " & searchRange.Address '////Debug Rango de búsqueda
+                                '////Revelar celdas
+                                With targetSheet
+                                    On Error Resume Next
+                                        .Cells.EntireColumn.Hidden = False
+                                        .Cells.EntireRow.Hidden = False
+                                        .AutoFilterMode = False
+                                        .UsedRange.UnMerge '////Separar las celdas combinadas
+                                        '////Convertir en Valores la hoja
+                                        .UsedRange.Copy
+                                        .Range("A1").PasteSpecial Paste:=xlPasteValues
+                                    On Error GoTo 0
+                                End With
+                                Application.CutCopyMode = False '////Elimina la selección actual
+                                
+                                '///////////////////////////////////Busqueda y extracción de valores
+                                Dim CellSearch As Range
+                                Dim rngFound As Range
+                                Dim colOrder As Collection
+                                Dim notFound As String
+                                Dim notFoundColOrder As Collection
+                                
+                                Set colOrder = New Collection '////Valores encontrados / Variable
+                                Set notFoundColOrder = New Collection '////Valores no encontrados / Variable
+                                
+                                For Each CellSearch In searchRange '////Bucle valores de búsqueda
+                                    Set rngFound = targetSheet.UsedRange.Find(What:=CellSearch.Value, LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False) '////Rango de valores encontrados / variable
+                                    If Not rngFound Is Nothing Then
+                                        On Error Resume Next
+                                        colOrder.Add item:=rngFound.Column, Key:=CellSearch.Value '////Agrega items de valores encontrados a la colección
+                                        On Error GoTo 0
+                                        If foundRow = 0 Or rngFound.Row < foundRow Then
+                                            foundRow = rngFound.Row '////Fila de valores encontrados
+                                        End If
+                                    Else
+                                        On Error Resume Next
+                                        notFoundColOrder.Add item:=0, Key:=CellSearch.Value '////Valores no encontrados
+                                        On Error GoTo 0
+                                        
+                                        If CellSearch.Value <> "Sin dato" Then '////Filtrado Valores no encontrados
+                                            notFound = notFound & CellSearch.Value & ", "
+                                            Dim notFoundCol As Range
+                                            Set notFoundCol = searchRange.Find(CellSearch.Value)
+                                            
+                                            If Not notFoundCol Is Nothing Then '////Genera equivalentes entre categoria y no encontrados
+                                                Dim notFoundColIndex As Integer
+                                                notFoundColIndex = notFoundCol.Column - searchRange.Column + 1
+                                                Dim notFoundCategoryValue As Variant
+                                                notFoundCategoryValue = categoryValue.Cells(1, notFoundColIndex).Value
+                                                notFoundCategories = notFoundCategories & notFoundCategoryValue & ", "
+                                            End If
+                                        End If
+                                    End If
+                                Next CellSearch
+                                'On Error Resume Next
+                                    If foundRow > 1 Then '////Elimna todas las filas sobre la fila encontrada
+                                        targetSheet.Rows("1:" & foundRow - 1).Delete
+                                    End If
+                                'On Error GoTo 0
+                                '////Crea un array para almacenar los datos que se van a copiar
+                                Dim data As Variant
+                                Dim lastRowArr As Long ', lastColumnArr As Long
+                                
+                                lastRowArr = Planilla2.ActiveSheet.Cells(Planilla2.ActiveSheet.Rows.Count, "B").End(xlUp).Row '////Busca la última fila con datos en la columna "B"
+                                'lastColumnArr = Planilla2.ActiveSheet.Cells(1, Planilla2.ActiveSheet.Columns.Count).End(xlToLeft).Column '////Busca la última columna con datos en la fila 1
+                                
+                                '////Obtener el número máximo de columnas en colOrder
+                                Dim maxColumn As Long
+                                For Each item In colOrder
+                                    If item > maxColumn Then
+                                        maxColumn = item
+                                    End If
+                                Next item
+                                
+                                '////Ajustar el tamaño de la matriz data solo hasta la última columna en colOrder
+                                ReDim data(1 To lastRowArr - 1, 1 To maxColumn)
+                                
+                                '////Rellena el array con los datos de las columnas encontradas en el orden correcto
+                                Dim i As Long, j As Long
+                                Dim rngFound2 As Range
+                                
+                                For i = 1 To UBound(data, 1)
+                                    j = 1
+                                    For Each CellSearch In searchRange
+                                        Set rngFound2 = Planilla2.ActiveSheet.Rows(1).Find(What:=CellSearch.Value, LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
+                                        If Not rngFound2 Is Nothing Then
+                                            data(i, j) = Planilla2.ActiveSheet.Cells(i + 1, rngFound2.Column).Value
+                                        End If
+                                        j = j + 1
+                                    Next CellSearch
+                                Next i
+                                
+                                '////////////////////////////////// Filtrar la hoja de trabajo Consolidado
+                                Dim providerFilter As Variant
+                                
+                                providerFilter = wsParametros.Cells(sheetRow, startCell.Column).Value '////Variable para filtrar hoja Consolidado
+                                Debug.Print "El filtro de Consolidado es: " & providerFilter
+                                
+                                ' Ajusta el AutoFilter para que comience desde la fila de "Consolidado_Proyectos"
+                                wsConsolidado.Range(filtroDesarrollador, wsConsolidado.Cells(lastRowCon, filtroDesarrollador.Column)).AutoFilter Field:=2, Criteria1:=providerFilter
+                                
+                                '///////////Pegar los datos
+                                Dim targetRow As Range
+                                Set targetRow = startCellCon.Offset(1) '////Fila donde pegar los datos
+                                
+                                While targetRow.EntireRow.Hidden '////Comprobar si la fila está oculta
+                                    Set targetRow = targetRow.Offset(1) '////Desplazarse a la siguiente fila
+                                Wend
+                                
+                                Set targetRow = targetRow.Resize(UBound(data, 1), UBound(data, 2)) '////Redimensionar el rango a un tamaño específico
+                                
+                                'Verifica si los datos caben en el espacio para pegar
+                                If targetRow.Rows.Count < UBound(data, 1) Then
+                                    MsgBox "El número de filas a importar es menor que el espacio de destino. Verifica el número de Departamentos/Casas del proveedor " & providerName & ".", vbExclamation, "Error en el proveedor " & provider
+                                ElseIf targetRow.Rows.Count > UBound(data, 1) Then
+                                    MsgBox "El número de filas a importar es mayor que el espacio de destino. Verifica el número de Departamentos/Casas del proveedor " & providerName & ".", vbExclamation, "Error en el proveedor " & provider
+                                Else
+                                    targetRow.Value = data '////Pega los datos copiados
+                                End If
+                                
+                                '////Mostrar un mensaje sobre los datos importados
+                                If Len(notFound) > 0 Then
+                                    ' Elimina la última coma y el espacio del string notFound
+                                    notFound = Left(notFound, Len(notFound) - 2)
+                                    notFoundCategories = Left(notFoundCategories, Len(notFoundCategories) - 2)
+                                    MsgBox "No se encontraron las siguientes categorías en la hoja        '" & Planilla2.ActiveSheet.Name & "': " & notFoundCategories & vbCrLf & "Los datos del proveedor " & providerName & " fueron importados", vbInformation, "Datos importados"
+                                    
+                                Else
+                                    MsgBox "Los datos del proveedor " & providerName & ": " & sheetName & " fueron importados", vbInformation, "Datos importados del proveedor " & providerName
+                                End If
+                            End If
+                            '///////////////////////////Fin Blucle hojas
+                        Next targetSheet
+                        '////Limpiar las variables después de usar la hoja actual
+                        Application.CutCopyMode = False
+                        providerRow = 0
+                        providerName = 0
+                        sheetRow = 0
+                        notFound = ""
+                        Set data = Nothing
+                        Set providerFilter = Nothing
+                        Set rngFound = Nothing
+                        Set colOrder = Nothing
+                        Set notFoundColOrder = Nothing
+                        Set targetRow = Nothing
+                        Set colOrder = Nothing
+                        foundRow = 0
+                        Set searchRange = Nothing
+                        Set sheetNames = Nothing
+                        lastRowArr = 0
+                        Set foundSheetRange = Nothing
+                        
+                        '////Quitar filtro
+                        If wsConsolidado.AutoFilterMode Then
+                            If wsConsolidado.FilterMode Then
+                                wsConsolidado.ShowAllData
+                            End If
+                        End If
+                    Else '////Mensaje si no se pudo abrir archivo
+                        MsgBox "No se pudo abrir el archivo seleccionado. Asegúrate de que el archivo existe y es accesible.", vbExclamation, "Error al abrir el archivo"
+                        Planilla2.Close SaveChanges:=False
+                    End If
+                End If
+                Planilla2.Close SaveChanges:=False '////Cierra archivo
+                
+                '///////////////////////////Fin Bucle archivos
+            Next Archivo
+        End If
+    End With
+    
+    '///Función limpiar
+    LimpiarValores wsConsolidado
+    With Application
+        .ScreenUpdating = True
+        .Calculation = xlCalculationAutomatic
+        .EnableEvents = True
+        .AskToUpdateLinks = True
+    End With
+    ' Calcular el tiempo transcurrido y mostrar mensaje de proceso completado
+    elapsedTime = Timer - startTime
+    MsgBox "Tiempo transcurrido: " & Format(elapsedTime / 86400, "hh:mm:ss") & vbCrLf & vbCrLf & "Proceso terminado.", vbInformation, "Proceso completado"
+End Sub
+Sub LimpiarValores(wsConsolidado As Worksheet)
+    Dim Rng As Range
+    Dim cellL As Range
+    Dim lastRowL As Long
+    Dim columnConsolidado As Long
+    Dim filaConsolidado As Long
+    Dim colFinImportar As Long
+    Dim celdaInicioLimpieza As Range
+
+    ' Obtener la fila de "Consolidado_Proyectos" y "Fin_Importar"
+    Set celdaInicioLimpieza = wsConsolidado.Range("Consolidado_Proyectos")
+    filaConsolidado = celdaInicioLimpieza.Row
+    columnConsolidado = celdaInicioLimpieza.Column
+    lastRowL = wsConsolidado.Cells(wsConsolidado.Rows.Count, columnConsolidado).End(xlUp).Row
+    
+    ' Verificar si la celda "Fin_Importar" está vacía
+    If wsConsolidado.Range("Fin_Importar").Value <> "" Then
+        colFinImportar = wsConsolidado.Range("Fin_Importar").Column
+        ' Ajustar el rango para limpiar valores
+        Set Rng = wsConsolidado.Range(wsConsolidado.Cells(filaConsolidado + 1, columnConsolidado), wsConsolidado.Cells(lastRowL, colFinImportar))
+        
+        ' Limpiar espacios en blanco
+        For Each cellL In Rng
+            cellL.Value = Application.Trim(cellL.Value)
+            If IsEmpty(cellL.Value) Or cellL.Value = "" Then
+                cellL.Value = "S/D"
+            End If
+        Next cellL
+        
+        ' Obtener la columna específica
+        Dim columnaMayusculas As Range
+        Set columnaMayusculas = wsConsolidado.Range(wsConsolidado.Cells(filaConsolidado + 1, columnConsolidado), wsConsolidado.Cells(lastRowL, columnConsolidado))
+        
+        ' Cambiar a mayúsculas en la columna específica
+        For Each cellL In columnaMayusculas
+            cellL.Value = UCase(cellL.Value)
+        Next cellL
+        
+    Else
+        MsgBox "La celda        'Fin_Importar' está vacía.", vbExclamation, "Error"
+    End If
+End Sub
